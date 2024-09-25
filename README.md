@@ -1,50 +1,73 @@
-# Energy-and-Power-Monitor-Integration
-A Home Assistant Integration to group energy and power sensors for rooms or smart power monitor devices, and get the values of the grouped entities and also the not tracked power
+# Energy and Power Monitor Integration
 
-############################
+A Home Assistant integration to group energy and power sensors for rooms or smart meter devices. This integration allows you to track the values of grouped entities and monitor untracked power consumption.
 
-UNDER DEVELOPMENT - STILL TESTING
+---
 
-############################
+### ⚠️ UNDER DEVELOPMENT - STILL TESTING ⚠️
 
-Hello, this is my first integration and my first reposity which i opened myself. Im still prety "new" to managing github, so bear with me.
+---
 
-Im greatfull for ideas to improve this integration and pointing/fixing some problems.
+### Introduction
 
-############################
+Hello! This is my first integration and my first GitHub repository, so please bear with me as I'm still learning to manage everything in Github. I'm open to any ideas to improve this integration and would greatly appreciate any help with identifying and fixing issues.
 
-What is this integration: (will be updated soon with more infos)
+---
 
-- in th is integration you can create several groups for your energy and power sensors
-- most of the dropdown boxes get filtered, so if you added an energy/power sensor to one integration entity it wont show up for selection anymore until it gets unselected
-- on the first gui you can select between energy and power which will filter the entities on the second gui
-- Second gui:
-    -Entities:
-        - Select the energy/power entities for i.e the Living Room
-        - A sensor will be created with all energy/power values combined i.e. "Selected entities - Power"
-    - Smart Monitor Device 
-        Select an Smart Meter for that room (Living Room), you can also leave it to None. The value of the selected Smart Meter will be used to and the selected entities for that room will be subtracted. The difference will be put into a second sensor i.e. "Untracked - Power"
-    - If you have more Rooms/Subrooms created they will be shown under Created Rooms.
-        - Selecting the room will add the value of i.e. "Selected entities - Power" and if present i.e. "Untracked - Power" to this room
+### What Does This Integration Do?
 
-- So you can create something like a tree "view", where the topmost can have all the values combined
+> _More information will be added soon._
 
-                                                HOUSE
-                "Living Room"               "Kitchen"                   "Bath"  ......
-        "Plug Window" "Plug Table"      "Device 1" "Device 2"           "Fan"   ......
+- This integration allows you to create multiple groups for your energy and power sensors.
+- Most dropdown boxes are filtered to avoid duplicate selections. For example, once an energy/power sensor is added to one integration entity, it will no longer appear for selection until it is unselected.
+- The initial GUI allows you to choose between "Energy" and "Power", filtering the entities available in the second GUI.
 
-- Like this you can see which device/room consumes how much energy/power
+**Second GUI:**
+- **Entities:**
+  - Select the energy/power entities for a specific room (e.g., the Living Room).
+  - A sensor will be created that combines all selected energy/power values. For example: "Living Room - Power".
+- **Smart Meter Device:**
+  - You can optionally select a Smart Meter for the room (e.g., Living Room) or leave it as "None". The value of the selected Smart Meter will be subtracted from the sum of the 
+    selected entities in that room. The difference will be stored in a second sensor, such as "Untracked - Power".
+  - If you have created more rooms/subrooms, they will appear under **Created Rooms**.
+  - Selecting a room will aggregate the values from sensors like "Living Room - Power" and "Untracked - Power" (if present).
+
+- You can build a hierarchical view, where the topmost entity aggregates all the values from sub-entities:
+
+                                          HOUSE
+            "Living Room"               "Kitchen"                   "Bathroom"  ...
+    "Plug Window" "Plug Table"      "Device 1" "Device 2"             "Fan"     ...
 
 
-############################
+This way, you can monitor which device or room consumes how much energy or power.
 
-So far it seems to work for me, the only known problems that i dont understand how to fix them right now are:
+---
 
-- Add/reconfig gui -> Smart Monitor Device dropdown -> howto remove the X or set the default to None when clicking X (showing it in the gui) 
-- Add/reconfig gui -> update the entities from one dropdown box when selecting an entity in a second dropdown box (Smart Monitor Device - Entity dropdowns)
-- Add -> created an entry with i.e. "Power - XXXX" but when clicking on reconfig the title ist updated again to this schema -> config_flow.py line 407 -> title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
-- Reconfig gui -> renaming an option -> also updating/deleting the new sensor name in all the other options -> sensor attribute "selected_entities" and "Energy and Power Monitor"
-- only German and English translation are tested, all other translation where created by ChatGPT, so hopefully they are good
-- update intervall of all sensors needs to be better handled
+### Current Issues (Known Bugs)
 
-im currently also working on a custom card and i post the link here when its finished.
+Here are some known problems that I am currently working on fixing, and some i currently don't know hot to solve:
+
+1. **Add/Reconfigure GUI:**
+ - In the Smart Meter Device dropdown, how can I remove the 'X' or set the default to "None" when the 'X' is clicked, currently it is empty when clicked X
+ 
+2. **Add/Reconfigure GUI:**
+ - How can I update the entities in one dropdown box when an entity is selected in a second dropdown box (e.g., Smart Meter Device and Entity dropdowns)?
+ 
+3. **Add:**
+ - When creating an entry like "Living Room" the titel gets updated to "Power - Living Room", but on the reconfigure button the "Power - " part get removed from the title  (see "config_flow.py", line 407). The title is set as title=f"{translated_entity_type} - {self.options[CONF_ROOM]}".
+ 
+4. **Reconfigure GUI:**
+ - When renaming an option, how can I update/delete the new sensor name across all other options? Specifically, this affects the sensor attributes "selected_entities" and "Energy and Power Monitor".
+ 
+5. **Translations:**
+ - Only German and English translations have been tested. All other translations were created using ChatGPT, so please let me know if there are any inaccuracies.
+ 
+6. **Sensor Update Interval:**
+ - The update interval for all sensors needs better handling.
+
+---
+
+### Upcoming Features
+
+I'm also working on a custom card for this integration. I'll post the link here once it's ready.
+
