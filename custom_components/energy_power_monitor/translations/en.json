@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "Power",
+        "energy": "Energy"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "Room Name",
+                    "entity_type": "Entity Type Filter"
+                },
+                "title": "Room Configuration",
+                "description": "Select the room and the type"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "Smart Monitor Device",
+                    "entities": "Entities",
+                    "integration_rooms": "Created Rooms",
+                    "none": "None"
+                },
+                "title": "Room Configuration",
+                "description": "Select a Smart Monitor device and all sensors connected to it"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Reconfigure Room",
+                "description": "Change the room name, Smart Monitor device, or sensors",
+                "data": {
+                    "room": "Room",
+                    "smart_monitor_device": "Smart Monitor Device",
+                    "entities": "Entities",
+                    "integration_rooms": "Created Rooms",
+                    "none": "None"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "None"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "Energy",
+                "power": "Power"
+            }
+        }
+    }
+}

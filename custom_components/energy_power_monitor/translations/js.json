@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "パワー",
+        "energy": "エネルギー"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "部屋の名前",
+                    "entity_type": "エンティティタイプフィルタ"
+                },
+                "title": "部屋の設定",
+                "description": "部屋とタイプを選択"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "スマートモニターデバイス",
+                    "entities": "エンティティ",
+                    "integration_rooms": "作成された部屋",
+                    "none": "なし"
+                },
+                "title": "部屋の設定",
+                "description": "スマートモニターデバイスを選択し、それに接続されているすべてのセンサーを選択します"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "部屋を再構成する",
+                "description": "部屋の名前、スマートモニターデバイス、またはセンサーを変更します",
+                "data": {
+                    "room": "部屋",
+                    "smart_monitor_device": "スマートモニターデバイス",
+                    "entities": "エンティティ",
+                    "integration_rooms": "作成された部屋",
+                    "none": "なし"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "なし"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "エネルギー",
+                "power": "パワー"
+            }
+        }
+    }
+}

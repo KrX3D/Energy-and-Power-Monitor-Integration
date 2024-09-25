@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "Potencia",
+        "energy": "Energía"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "Nombre del Salón",
+                    "entity_type": "Filtro de Tipo de Entidad"
+                },
+                "title": "Configuración de la Sala",
+                "description": "Seleccione la sala y el tipo"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "Dispositivo de Monitoreo Inteligente",
+                    "entities": "Entidades",
+                    "integration_rooms": "Salas Creadas",
+                    "none": "Ninguna"
+                },
+                "title": "Configuración de la Sala",
+                "description": "Seleccione un dispositivo de monitoreo inteligente y todos los sensores conectados a él"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Reconfigurar Sala",
+                "description": "Cambie el nombre de la sala, el dispositivo de monitoreo inteligente o los sensores",
+                "data": {
+                    "room": "Sala",
+                    "smart_monitor_device": "Dispositivo de Monitoreo Inteligente",
+                    "entities": "Entidades",
+                    "integration_rooms": "Salas Creadas",
+                    "none": "Ninguna"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "Ninguna"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "Energía",
+                "power": "Potencia"
+            }
+        }
+    }
+}

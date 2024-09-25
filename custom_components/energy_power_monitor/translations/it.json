@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "Potenza",
+        "energy": "Energia"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "Nome della Stanza",
+                    "entity_type": "Filtro Tipo Entità"
+                },
+                "title": "Configurazione della Stanza",
+                "description": "Seleziona la stanza e il tipo"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "Dispositivo di Monitoraggio Intelligente",
+                    "entities": "Entità",
+                    "integration_rooms": "Stanze Create",
+                    "none": "Nessuna"
+                },
+                "title": "Configurazione della Stanza",
+                "description": "Seleziona un dispositivo di monitoraggio intelligente e tutti i sensori ad esso collegati"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Reconfigura Stanza",
+                "description": "Cambia il nome della stanza, il dispositivo di monitoraggio intelligente o i sensori",
+                "data": {
+                    "room": "Stanza",
+                    "smart_monitor_device": "Dispositivo di Monitoraggio Intelligente",
+                    "entities": "Entità",
+                    "integration_rooms": "Stanze Create",
+                    "none": "Nessuna"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "Nessuna"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "Energia",
+                "power": "Potenza"
+            }
+        }
+    }
+}

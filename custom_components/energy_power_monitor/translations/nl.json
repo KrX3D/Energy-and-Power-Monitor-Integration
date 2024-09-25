@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "Vermogen",
+        "energy": "Energie"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "Kamersnaam",
+                    "entity_type": "Entiteitstype Filter"
+                },
+                "title": "Kamersetting",
+                "description": "Selecteer de kamer en het type"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "Slimme Monitor Apparaat",
+                    "entities": "Entiteiten",
+                    "integration_rooms": "Gemaakte Kamers",
+                    "none": "Geen"
+                },
+                "title": "Kamersetting",
+                "description": "Selecteer een slim monitor apparaat en alle sensoren die eraan zijn verbonden"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Kamer opnieuw configureren",
+                "description": "Wijzig de kamernaam, slim monitor apparaat of sensoren",
+                "data": {
+                    "room": "Kamer",
+                    "smart_monitor_device": "Slimme Monitor Apparaat",
+                    "entities": "Entiteiten",
+                    "integration_rooms": "Gemaakte Kamers",
+                    "none": "Geen"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "Geen"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "Energie",
+                "power": "Vermogen"
+            }
+        }
+    }
+}

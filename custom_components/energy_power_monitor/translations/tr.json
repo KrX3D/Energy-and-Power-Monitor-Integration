@@ -1,0 +1,56 @@
+{
+    "entity_type": {
+        "power": "Güç",
+        "energy": "Enerji"
+    },
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "room": "Oda Adı",
+                    "entity_type": "Varlık Tipi Filtre"
+                },
+                "title": "Oda Yapılandırması",
+                "description": "Odayı ve tipi seçin"
+            },
+            "select_entities": {
+                "data": {
+                    "smart_monitor_device": "Akıllı İzleme Cihazı",
+                    "entities": "Varlıklar",
+                    "integration_rooms": "Oluşturulan Odalar",
+                    "none": "Hiçbiri"
+                },
+                "title": "Oda Yapılandırması",
+                "description": "Bir akıllı izleme cihazı ve ona bağlı tüm sensörleri seçin"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "title": "Odayı Yeniden Yapılandır",
+                "description": "Oda adını, akıllı izleme cihazını veya sensörleri değiştirin",
+                "data": {
+                    "room": "Oda",
+                    "smart_monitor_device": "Akıllı İzleme Cihazı",
+                    "entities": "Varlıklar",
+                    "integration_rooms": "Oluşturulan Odalar",
+                    "none": "Hiçbiri"
+                }
+            },
+            "select_entities": {
+                "data": {
+                    "none": "Hiçbiri"
+                }
+            }
+        }
+    },
+    "selector": {
+        "entity_type": {
+            "options": {
+                "energy": "Enerji",
+                "power": "Güç"
+            }
+        }
+    }
+}
