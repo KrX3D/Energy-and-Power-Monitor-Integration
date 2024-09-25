@@ -51,11 +51,13 @@ async def get_integration_entities(hass):
     _LOGGER.debug(f"get_integration_entities function return: {integration_entities}")
     return integration_entities
     
-def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_entities, selected_entities):
+def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_entities, selected_entities, entity_type):
     """Get entities from selected existing rooms and avoid duplicates."""
     _LOGGER.debug(f"get_selected_entities_for_rooms function start")
     _LOGGER.debug(f"Selected rooms: {selected_existing_rooms}")
+    _LOGGER.debug(f"Selected integration entities by user: {integration_entities}")
     _LOGGER.debug(f"Selected entities by user: {selected_entities}")
+    _LOGGER.debug(f"Selected entity type by user: {entity_type}")
 
     for room_id in selected_existing_rooms:
         if room_id in integration_entities:
@@ -66,7 +68,8 @@ def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_e
                 selected_entities.extend(room_entities)
 
             # Check for '_untracked_' entity
-            untracked_entity = f"{room_id.replace('_power', '')}_untracked_power"
+            untracked_entity = f"{room_id.replace(f'_{entity_type}', '')}_untracked_{entity_type}"
+
             _LOGGER.debug(f"Checking if untracked power entity exist: {untracked_entity}")
             entity_state = hass.states.get(untracked_entity)
             
@@ -273,7 +276,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
             # Get selected entities from the existing rooms
-            selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities)
+            selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, self.selected_type)
             
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
 
@@ -381,9 +384,12 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Check if the user has deselected the smart monitor device
                 if selected_smd == "":
                    selected_smd = TRANSLATION_NONE  # Set to "None" if deselected
+
+                # Use the old config entry's data to get the entity type
+                current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
                    
                 # Get selected entities from the existing rooms
-                selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities)
+                selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 # Save the entry
@@ -394,9 +400,6 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options)
-
-                # Use the old config entry's data to get the entity type
-                current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE, ENTITY_TYPE_POWER)  # Default to power if not found
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
                 

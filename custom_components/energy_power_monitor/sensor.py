@@ -168,12 +168,12 @@ class SmartMonitorSensor(SensorEntity):
     def generate_unique_id(self):
         """Generate a unique ID for the Smart Monitor sensor."""
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"{DOMAIN}_{sanitized_room_name}_calculated_rest_{self._entity_type}"
+        return f"{DOMAIN}_{sanitized_room_name}_untracked_{self._entity_type}"
 
     @property
     def name(self):
         """Return the name of the Smart Monitor sensor."""
-        return f"{self._room_name} calculated rest - {self._entity_type.capitalize()}"
+        return f"{self._room_name} untracked - {self._entity_type.capitalize()}"
 
     @property
     def state(self):
