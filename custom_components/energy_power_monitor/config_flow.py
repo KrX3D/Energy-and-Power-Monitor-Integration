@@ -428,7 +428,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(f"Existing rooms: {existing_rooms}")
 
         # Filter the old entities (already selected)
-        filtered_old_entities = set(entity for entity in old_entities if not entity.startswith('sensor.{DOMAIN}'))
+        filtered_old_entities = set(entity for entity in old_entities if not entity.startswith(f'sensor.{DOMAIN}'))
         _LOGGER.debug(f"Old entities: {old_entities}")
         _LOGGER.debug(f"Old filtered entities: {filtered_old_entities}")
 
