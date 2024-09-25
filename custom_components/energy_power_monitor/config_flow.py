@@ -129,7 +129,7 @@ def get_selected_smart_monitor_devices(hass, filtered_entities):
     _LOGGER.debug("get_selected_smart_monitor_devices function start")
 
     # Filter entities that start with 'sensor.energy_power_monitor'
-    old_entities_smd = [entity for entity in filtered_entities if entity.startswith('sensor.{DOMAIN}')]
+    old_entities_smd = [entity for entity in filtered_entities if entity.startswith(f'sensor.{DOMAIN}')]
     old_entities_smd_untracked = [entity for entity in old_entities_smd if '_untracked_' in entity]
 
     selected_smart_monitor_devices = set()  # Use a set to avoid duplicates
@@ -162,7 +162,7 @@ def get_selected_integration_rooms(hass, existing_rooms):
             
             # Filter entities that start with 'sensor.energy_power_monitor' and do not end with '_untracked_'
             for entity in selected_entities:
-                if entity.startswith('sensor.{DOMAIN}') and not entity.endswith(('_untracked_power', '_untracked_energy')):
+                if entity.startswith(f'sensor.{DOMAIN}') and not entity.endswith(('_untracked_power', '_untracked_energy')):
                     # Get the friendly name directly from the entity's state
                     friendly_name = hass.states.get(entity).attributes.get('friendly_name', entity)
                     
