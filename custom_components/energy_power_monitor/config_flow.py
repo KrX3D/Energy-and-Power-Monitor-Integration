@@ -68,7 +68,7 @@ def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_e
                 selected_entities.extend(room_entities)
 
             # Check for '_untracked_' entity
-            untracked_entity = f"{room_id.replace(f'_{entity_type}', '')}_untracked_{entity_type}"
+            untracked_entity = f"{room_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
 
             _LOGGER.debug(f"Checking if untracked power entity exist: {untracked_entity}")
             entity_state = hass.states.get(untracked_entity)
