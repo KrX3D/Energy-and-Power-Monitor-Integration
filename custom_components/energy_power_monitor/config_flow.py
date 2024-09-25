@@ -141,7 +141,7 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
             selected_smart_meter_devices.add(selected_device)  # Add the selected device to the set
 
     _LOGGER.debug(f"Already created Smart Meter Devices: {old_entities_smd_untracked}")
-    _LOGGER.debug(f"Selected Smart Meter Devices: {selected_smart_Meter_devices}")
+    _LOGGER.debug(f"Selected Smart Meter Devices: {selected_smart_meter_devices}")
 
     return selected_smart_meter_devices
 
