@@ -1,0 +1,10 @@
+{
+  "domain": "energy_power_monitor",
+  "name": "Energy and Power Monitor",
+  "version": "1.0",
+  "requirements": [],
+  "dependencies": [],
+  "config_flow": true,
+  "codeowners": ["@KrX3D"],
+  "icon": "/local/custom_components/energy_power_monitor/icon.png"
+}
