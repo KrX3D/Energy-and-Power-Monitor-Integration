@@ -142,8 +142,9 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             #else:
                 #_LOGGER.debug(f"Entity {entity_id} is unavailable or has an unknown state.")
 
-        # Limit the decimals to 1 (or as needed)
-        self._state = round(total_value, 1)
+        # Limit the decimals to 1 and ensure the value is not negative
+        self._state = max(0, round(total_value, 1))
+
         #_LOGGER.info(f"Updated EnergyandPowerMonitorSensor {self.entity_id} state to {self._state} {self.unit_of_measurement}")
 
 class SmartMeterSensor(SensorEntity):
@@ -184,9 +185,9 @@ class SmartMeterSensor(SensorEntity):
         if (energy_power_monitor_value is not None and smart_meter_value is not None and
                 energy_power_monitor_value != "unknown" and smart_meter_value.state != "unknown" and
                 energy_power_monitor_value != "unavailable" and smart_meter_value.state != "unavailable"):
-            # Calculate the state as the difference
-            return round(float(smart_meter_value.state) - float(energy_power_monitor_value), 1)
-
+            # Calculate the difference and ensure it's not negative
+            value = float(smart_meter_value.state) - float(energy_power_monitor_value)
+            return max(0, round(value, 1))
         return None
 
     @property
