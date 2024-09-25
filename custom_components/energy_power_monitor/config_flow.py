@@ -41,7 +41,7 @@ async def get_integration_entities(hass):
     integration_entities = {}
 
     for entity_id, entity in entity_registry.entities.items():
-        if entity.unique_id.startswith({DOMAIN}):
+        if entity.unique_id.startswith(DOMAIN):
             state = hass.states.get(entity_id)
             if state and 'friendly_name' in state.attributes:
                 # Get friendly_name and remove the " Power" suffix
