@@ -1,6 +1,8 @@
 {
   "domain": "energy_power_monitor",
   "name": "Energy and Power Monitor",
+  "documentation": "",
+  "issue_tracker": "",
   "version": "1.0",
   "requirements": [],
   "dependencies": [],
