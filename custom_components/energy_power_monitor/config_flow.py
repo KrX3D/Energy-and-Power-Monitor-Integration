@@ -559,8 +559,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info("Removing old configuration for room: %s", old_room)
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             if entry.data.get(CONF_ROOM) == old_room:
-                if entry.entry_id in self.hass.data.get('{DOMAIN}_config', {}):
-                    sensor_data = self.hass.data['{DOMAIN}_config'][entry.entry_id]
+                if entry.entry_id in self.hass.data.get(f'{DOMAIN}_config', {}):
+                    sensor_data = self.hass.data[f'{DOMAIN}_config'][entry.entry_id]
                     sensors = sensor_data.get('sensors', [])
                     for sensor in sensors:
                         if isinstance(sensor, EnergyandPowerMonitorSensor):
