@@ -65,16 +65,16 @@ def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_e
             if room_entities:
                 selected_entities.extend(room_entities)
 
-            # Check for '_calculated_rest_' entity
-            calculated_rest_entity = f"{room_id.replace('_power', '')}_calculated_rest_power"
-            _LOGGER.debug(f"Checking if calculated rest power entity exist: {calculated_rest_entity}")
-            entity_state = hass.states.get(calculated_rest_entity)
+            # Check for '_untracked_' entity
+            untracked_entity = f"{room_id.replace('_power', '')}_untracked_power"
+            _LOGGER.debug(f"Checking if untracked power entity exist: {untracked_entity}")
+            entity_state = hass.states.get(untracked_entity)
             
             if entity_state:
-                _LOGGER.debug(f"Found _calculated_rest_ entity: {calculated_rest_entity}")
-                selected_entities.append(calculated_rest_entity)
+                _LOGGER.debug(f"Found _untracked_ entity: {untracked_entity}")
+                selected_entities.append(untracked_entity)
             #else:
-                #_LOGGER.debug(f"Rest power entity {calculated_rest_entity} not found.")
+                #_LOGGER.debug(f"Untracked entity {untracked_entity} not found.")
     
     # Remove duplicates
     unique_selected_entities = sorted(list(set(selected_entities)))
@@ -127,17 +127,17 @@ def get_selected_smart_monitor_devices(hass, filtered_entities):
 
     # Filter entities that start with 'sensor.energy_power_monitor'
     old_entities_smd = [entity for entity in filtered_entities if entity.startswith('sensor.{DOMAIN}')]
-    old_entities_smd_calculated = [entity for entity in old_entities_smd if '_calculated_rest_' in entity]
+    old_entities_smd_untracked = [entity for entity in old_entities_smd if '_untracked_' in entity]
 
     selected_smart_monitor_devices = set()  # Use a set to avoid duplicates
 
-    for entity in old_entities_smd_calculated:
+    for entity in old_entities_smd_untracked:
         state = hass.states.get(entity)  # Get the state of the entity
         if state and 'Selected Smart Monitor Device' in state.attributes:
             selected_device = state.attributes['Selected Smart Monitor Device']
             selected_smart_monitor_devices.add(selected_device)  # Add the selected device to the set
 
-    _LOGGER.debug(f"Already created Smart Monitor Devices: {old_entities_smd_calculated}")
+    _LOGGER.debug(f"Already created Smart Monitor Devices: {old_entities_smd_untracked}")
     _LOGGER.debug(f"Selected Smart Monitor Devices: {selected_smart_monitor_devices}")
 
     return selected_smart_monitor_devices
@@ -157,9 +157,9 @@ def get_selected_integration_rooms(hass, existing_rooms):
             # Get the attributes of the entity
             selected_entities = entity_state.attributes.get('selected_entities', [])
             
-            # Filter entities that start with 'sensor.energy_power_monitor' and do not end with '_calculated_rest_'
+            # Filter entities that start with 'sensor.energy_power_monitor' and do not end with '_untracked_'
             for entity in selected_entities:
-                if entity.startswith('sensor.{DOMAIN}') and not entity.endswith(('_calculated_rest_power', '_calculated_rest_energy')):
+                if entity.startswith('sensor.{DOMAIN}') and not entity.endswith(('_untracked_power', '_untracked_energy')):
                     # Get the friendly name directly from the entity's state
                     friendly_name = hass.states.get(entity).attributes.get('friendly_name', entity)
                     
@@ -599,7 +599,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         #_LOGGER.debug(f"Sanitized room name: {sanitized_room_name}")
         
         entity_id_se = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}_{current_entity_type}"
-        entity_id_cr = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}_calculated_rest_{current_entity_type}"
+        entity_id_cr = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}_untracked_{current_entity_type}"
         _LOGGER.info(f"Attempting to remove entity: {entity_id_se} and {entity_id_cr}")
 
         if entity_id_se in entity_registry.entities:
