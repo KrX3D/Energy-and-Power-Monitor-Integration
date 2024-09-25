@@ -241,7 +241,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         selected_smart_monitor_devices = get_selected_smart_monitor_devices(self.hass, filtered_entities)
         
         # Remove entities that start with 'sensor.energy_power_monitor'
-        filtered_entities = [entity for entity in filtered_entities if not entity.startswith('sensor.{DOMAIN}')]
+        filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
 
         existing_entities_in_rooms = set()
 
@@ -484,7 +484,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         #_LOGGER.debug(f"Filtered entities before energy_power_monitor removal: {filtered_entities}")
         # Remove entities that start with 'sensor.energy_power_monitor'
-        filtered_entities = [entity for entity in filtered_entities if not entity.startswith('sensor.{DOMAIN}')]
+        filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
         #_LOGGER.debug(f"Filtered entities after energy_power_monitor removal: {filtered_entities}")
 
         # Convert friendly names to entity IDs for the GUI options
