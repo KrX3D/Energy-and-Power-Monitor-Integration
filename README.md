@@ -29,9 +29,9 @@ What is this integration: (will be updated soon with more infos)
 
 - So you can create something like a tree "view", where the topmost can have all the values combined
 
-                                            HOUSE
-            "Living Room"               "Kitchen"                   "Bath"  ......
-    "Plug Window" "Plug Table"      "Device 1" "Device 2"           "Fan"
+                                                HOUSE
+                "Living Room"               "Kitchen"                   "Bath"  ......
+        "Plug Window" "Plug Table"      "Device 1" "Device 2"           "Fan"   ......
 
 - Like this you can see which device/room consumes how much energy/power
 
