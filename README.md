@@ -53,7 +53,7 @@ Here are some known problems that I am currently working on fixing, and some i c
 2. **Add/Reconfigure GUI:**
  - How can I update the entities in one dropdown box when an entity is selected in a second dropdown box (e.g., Smart Meter Device and Entity dropdowns)?
  
-3. **Add:**
+3. **Add GUI:**
  - When creating an entry like "Living Room" the titel gets updated to "Power - Living Room", but on the reconfigure button the "Power - " part get removed from the title  (see "config_flow.py", line 407). The title is set as title=f"{translated_entity_type} - {self.options[CONF_ROOM]}".
  
 4. **Reconfigure GUI:**

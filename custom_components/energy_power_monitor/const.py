@@ -3,7 +3,7 @@
 DOMAIN = "energy_power_monitor"
 
 CONF_ROOM = "room"
-CONF_SMART_MONITOR_DEVICE = "smart_monitor_device"
+CONF_SMART_Meter_DEVICE = "smart_meter_device"
 CONF_ENTITIES = "entities"
 CONF_ENTITY_TYPE = "entity_type"
 CONF_INTEGRATION_ROOMS = "integration_rooms"
