@@ -1,8 +1,8 @@
 {
   "domain": "energy_power_monitor",
   "name": "Energy and Power Monitor",
-  "documentation": "",
-  "issue_tracker": "",
+  "documentation": "https://github.com/KrX3D/Energy-and-Power-Monitor-Integration/wiki",
+  "issue_tracker": "https://github.com/KrX3D/Energy-and-Power-Monitor-Integration/issues",
   "version": "1.0",
   "requirements": [],
   "dependencies": [],
