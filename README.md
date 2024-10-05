@@ -62,7 +62,7 @@ Here are some known problems that I am currently working on fixing, and some i c
  
 5. **Sensor Update Interval:**
  - The update interval for all sensors needs better handling.
- - 
+   
 6. **Sensor removed in Home Assistant:**
  - If a sensor was removed or renamed in Home Assistant, also remove it in this integration if it was selected
 
