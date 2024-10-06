@@ -16,7 +16,7 @@ Hello! This is my first integration and my first GitHub repository, so please be
 
 ### Home Assistant Card for this Integration:
 
- [Energy and Power Monitor Card](https://github.com/KrX3D/room-power-monitor-card).
+ [Energy and Power Monitor Card](https://github.com/KrX3D/Energy-and-Power-Monitor-Card).
 
 ---
 
