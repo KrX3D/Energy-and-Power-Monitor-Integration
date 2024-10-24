@@ -39,7 +39,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         
         _LOGGER.debug("Home Assistant is fully started, proceeding with entity check...")
 
-
         # Fetch translations
         TRANSLATION_NONE = await get_translated_none(hass)
             
