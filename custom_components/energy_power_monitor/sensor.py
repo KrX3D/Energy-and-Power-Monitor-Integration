@@ -32,6 +32,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entity_type = entry.data.get('entity_type')
     smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
+    # Check for and remove non-existent entities on Home Assistant startup
+    entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+
     _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
     if not room_name or not isinstance(entities, list):
@@ -46,6 +49,36 @@ async def async_setup_entry(hass, entry, async_add_entities):
     if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
         smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
         async_add_entities([smart_meter_sensor])
+
+async def async_reload_entry(hass, entry):
+    """Handle reload of the integration."""
+    room_name = entry.data.get('room')
+    entities = entry.data.get('entities')
+    entity_type = entry.data.get('entity_type')
+
+    # Check for and remove non-existent entities on integration reload
+    entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+
+    _LOGGER.debug(f"Reloading Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, entry_id={entry.entry_id}, entity_type={entity_type}")
+
+    # You might want to reinitialize or update sensors here as well.
+
+def check_and_remove_nonexistent_entities(hass, entities, entry):
+    """Check if selected entities still exist, and remove those that don't."""
+    _LOGGER.debug(f"Executing function check_and_remove_nonexistent_entities")
+    valid_entities = []
+
+    for entity_id in entities:
+        if hass.states.get(entity_id):
+            _LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
+            valid_entities.append(entity_id)  # Keep the entity if it exists
+        else:
+            _LOGGER.warning(f"Entity {entity_id} no longer exists. Removing it.")
+    
+    # Update the selected_entities attribute with valid ones in the config entry
+    entry.data['entities'] = valid_entities
+
+    return valid_entities
 
 class EnergyandPowerMonitorSensor(SensorEntity):
     """Representation of a Energy and Power Monitor sensor."""
