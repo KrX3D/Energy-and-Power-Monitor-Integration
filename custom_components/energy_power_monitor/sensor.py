@@ -25,45 +25,44 @@ async def get_translated_none(hass: HomeAssistant):
     
     return translated_none
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities, event=None):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
-    
-    # Check if Home Assistant is fully running
-    if not hass.is_running:
-        _LOGGER.debug("Home Assistant is still not fully running, waiting...")
-        return
-    
-    _LOGGER.debug("Home Assistant is fully started, proceeding with entity check...")
-
-    # Fetch translations
-    TRANSLATION_NONE = await get_translated_none(hass)
+    async def check_and_setup_entities(event):
+        """Check for and remove non-existent entities when Home Assistant is fully started."""
+        if not hass.is_running:
+            _LOGGER.debug("Home Assistant is still not fully running, waiting...")
+            return
         
-    # Fetch configuration data
-    room_name = entry.data.get('room')
-    entities = entry.data.get('entities')
-    entity_type = entry.data.get('entity_type')
-    smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
+        _LOGGER.debug("Home Assistant is fully started, proceeding with entity check...")
 
-    entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        # Fetch translations
+        TRANSLATION_NONE = await get_translated_none(hass)
+            
+        # Fetch configuration data
+        room_name = entry.data.get('room')
+        entities = entry.data.get('entities')
+        entity_type = entry.data.get('entity_type')
+        smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-    _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities_checked}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
+        entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        _LOGGER.debug(f"Entities after check: {entities_checked}")
 
-    if not room_name or not isinstance(entities, list):
-        _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
-        return False
+        _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
-    # Create the main sensor for the room
-    sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
-    async_add_entities([sensor])
+        if not room_name or not isinstance(entities, list):
+            _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
+            return False
 
-    # If a smart meter device was selected, create a second sensor for it
-    if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
-        smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
-        async_add_entities([smart_meter_sensor])
+        # Create the main sensor for the room
+        sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
+        async_add_entities([sensor])
 
-# Listen for the Home Assistant started event
-# Here we're adding a lambda to pass the required parameters
-hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, lambda event: async_setup_entry(hass, entry, async_add_entities, event))
+        # If a smart meter device was selected, create a second sensor for it
+        if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
+            smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
+            async_add_entities([smart_meter_sensor])
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
 
 async def async_reload_entry(hass: HomeAssistant, entry):
     """Handle reload of the config entry."""
