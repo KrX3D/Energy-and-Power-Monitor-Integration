@@ -33,7 +33,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
     # Check for and remove non-existent entities on Home Assistant startup
-    entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+    #entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+    check_and_remove_nonexistent_entities(hass, entities, entry)
 
     _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
@@ -57,7 +58,8 @@ async def async_reload_entry(hass, entry):
     entity_type = entry.data.get('entity_type')
 
     # Check for and remove non-existent entities on integration reload
-    entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+    #entities = check_and_remove_nonexistent_entities(hass, entities, entry)
+    check_and_remove_nonexistent_entities(hass, entities, entry)
 
     _LOGGER.debug(f"Reloading Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
@@ -76,7 +78,8 @@ def check_and_remove_nonexistent_entities(hass, entities, entry):
             _LOGGER.warning(f"Entity {entity_id} no longer exists. Removing it.")
     
     # Update the selected_entities attribute with valid ones in the config entry
-    entry.data['entities'] = valid_entities
+    #entry.data['entities'] = valid_entities
+    _LOGGER.debug(f"Valid entities after check: {valid_entities}")
 
     return valid_entities
 
