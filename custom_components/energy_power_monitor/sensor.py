@@ -34,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     entity_type = entry.data.get('entity_type')
     smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-    async def check_and_setup_entities():
+    async def check_and_setup_entities(event):
         """Check for and remove non-existent entities when Home Assistant is fully started."""
         _LOGGER.debug("Waiting for Home Assistant to fully start...")
         await hass.async_block_till_done()  # Ensures Home Assistant has finished setting up
@@ -56,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
-            
+
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
 
 async def async_reload_entry(hass: HomeAssistant, entry):
