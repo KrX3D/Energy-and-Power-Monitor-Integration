@@ -47,6 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
             return False
 
+
         # Create the main sensor for the room
         sensor = EnergyandPowerMonitorSensor(hass, room_name, entities, entry.entry_id, entity_type)
         #sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
