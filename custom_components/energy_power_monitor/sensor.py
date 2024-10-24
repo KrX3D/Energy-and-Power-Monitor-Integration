@@ -27,13 +27,12 @@ async def get_translated_none(hass: HomeAssistant):
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
-    smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
     async def check_and_setup_entities(event, hass, entry):
         """Check for and remove non-existent entities when Home Assistant is fully started."""
         if event is not None:
             _LOGGER.debug("Home Assistant started event detected.")
-            
+
         if not hass.is_running:
             _LOGGER.debug("Home Assistant is still not fully running, waiting...")
             return
@@ -47,6 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         room_name = entry.data.get('room')
         entities = entry.data.get('entities')
         entity_type = entry.data.get('entity_type')
+        smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
         # Check and remove non-existent entities
         _LOGGER.debug("Proceeding with entity check...")
