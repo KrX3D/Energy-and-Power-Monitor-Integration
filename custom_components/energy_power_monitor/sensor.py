@@ -36,8 +36,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     async def check_and_setup_entities(event):
         """Check for and remove non-existent entities when Home Assistant is fully started."""
-        _LOGGER.debug("Waiting for Home Assistant to fully start...")
-        await hass.async_block_till_done()  # Ensures Home Assistant has finished setting up
+        if not hass.is_running:
+            _LOGGER.debug("Home Assistant is still not fully running, waiting...")
+            return
+        
+        _LOGGER.debug("Home Assistant is fully started, proceeding with entity check...")
+
         entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
         _LOGGER.debug(f"Entities after check: {entities_checked}")
 
@@ -46,7 +50,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         if not room_name or not isinstance(entities, list):
             _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
             return False
-
 
         # Create the main sensor for the room
         sensor = EnergyandPowerMonitorSensor(hass, room_name, entities, entry.entry_id, entity_type)
