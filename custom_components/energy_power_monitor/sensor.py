@@ -4,11 +4,13 @@ from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy
 from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_METER_DEVICE
 from homeassistant.helpers.translation import async_get_translations
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
 
-async def get_translated_none(hass):
+async def get_translated_none(hass: HomeAssistant):
     """Fetch the translated 'None' value."""
     user_language = hass.config.language
     #_LOGGER.debug(f"SENSOR User Language:: {user_language}")
@@ -23,7 +25,7 @@ async def get_translated_none(hass):
     
     return translated_none
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     TRANSLATION_NONE = await get_translated_none(hass)
         
@@ -32,40 +34,37 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entity_type = entry.data.get('entity_type')
     smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-    # Check for and remove non-existent entities on Home Assistant startup
-    #entities = check_and_remove_nonexistent_entities(hass, entities, entry)
-    check_and_remove_nonexistent_entities(hass, entities, entry)
+    async def check_and_setup_entities():
+        """Check for and remove non-existent entities when Home Assistant is fully started."""
+        _LOGGER.debug("Waiting for Home Assistant to fully start...")
+        await hass.async_block_till_done()  # Ensures Home Assistant has finished setting up
+        entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        _LOGGER.debug(f"Entities after check: {entities_checked}")
 
-    _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
+        _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
-    if not room_name or not isinstance(entities, list):
-        _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
-        return False
+        if not room_name or not isinstance(entities, list):
+            _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
+            return False
 
-    # Create the main sensor for the room
-    sensor = EnergyandPowerMonitorSensor(hass, room_name, entities, entry.entry_id, entity_type)
-    async_add_entities([sensor])
+        # Create the main sensor for the room
+        sensor = EnergyandPowerMonitorSensor(hass, room_name, entities, entry.entry_id, entity_type)
+        #sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
+        async_add_entities([sensor])
 
-    # If a smart meter device was selected, create a second sensor for it
-    if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
-        smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
-        async_add_entities([smart_meter_sensor])
+        # If a smart meter device was selected, create a second sensor for it
+        if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
+            smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
+            async_add_entities([smart_meter_sensor])
+            
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
 
-async def async_reload_entry(hass, entry):
-    """Handle reload of the integration."""
-    room_name = entry.data.get('room')
-    entities = entry.data.get('entities')
-    entity_type = entry.data.get('entity_type')
+async def async_reload_entry(hass: HomeAssistant, entry):
+    """Handle reload of the config entry."""
+    # Simply call the async_setup_entry to reapply the configuration
+    await async_setup_entry(hass, entry)
 
-    # Check for and remove non-existent entities on integration reload
-    #entities = check_and_remove_nonexistent_entities(hass, entities, entry)
-    check_and_remove_nonexistent_entities(hass, entities, entry)
-
-    _LOGGER.debug(f"Reloading Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, entry_id={entry.entry_id}, entity_type={entity_type}")
-
-    # You might want to reinitialize or update sensors here as well.
-
-def check_and_remove_nonexistent_entities(hass, entities, entry):
+def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     """Check if selected entities still exist, and remove those that don't."""
     _LOGGER.debug(f"Executing function check_and_remove_nonexistent_entities")
     valid_entities = []
@@ -84,9 +83,9 @@ def check_and_remove_nonexistent_entities(hass, entities, entry):
     return valid_entities
 
 class EnergyandPowerMonitorSensor(SensorEntity):
-    """Representation of a Energy and Power Monitor sensor."""
+    """Representation of an Energy and Power Monitor sensor."""
     
-    def __init__(self, hass, room_name, entities, entry_id, entity_type):
+    def __init__(self, hass: HomeAssistant, room_name, entities, entry_id, entity_type):
         """Initialize the Energy and Power Monitor sensor."""
         self.hass = hass
         self._room_name = room_name
@@ -186,7 +185,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor."""
     
-    def __init__(self, hass, room_name, smart_meter_device, entry_id, entity_type, energy_power_monitor_sensor):
+    def __init__(self, hass: HomeAssistant, room_name, smart_meter_device, entry_id, entity_type, energy_power_monitor_sensor):
         """Initialize the Smart Meter sensor."""
         self.hass = hass
         self._room_name = room_name
