@@ -52,8 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             return False
 
         # Create the main sensor for the room
-        sensor = EnergyandPowerMonitorSensor(hass, room_name, entities, entry.entry_id, entity_type)
-        #sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
+        sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
         async_add_entities([sensor])
 
         # If a smart meter device was selected, create a second sensor for it
