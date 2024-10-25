@@ -67,23 +67,17 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     async def reload_integration_periodically(now):
         """Reload the integration every 5 minutes."""
         _LOGGER.debug("Reloading the integration automatically after 5 minutes.")
-        await async_reload_entry(hass, entry)
+        await check_and_setup_entities()
 
     # Start the periodic reloader
     async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
-    
+
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
     else:
         # Otherwise, listen for the start event
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
-
-async def async_reload_entry(hass: HomeAssistant, entry):
-    """Handle reload of the config entry."""
-    _LOGGER.debug("async_reload_entry function start...")
-    # Simply call the async_setup_entry to reapply the configuration
-    await async_setup_entry(hass, entry)
 
 def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     """Check if selected entities still exist, and remove those that don't."""
