@@ -62,7 +62,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
+    # If Home Assistant is already running, call check_and_setup_entities immediately
+    if hass.is_running:
+        await check_and_setup_entities()
+    else:
+        # Otherwise, listen for the start event
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
 
 async def async_reload_entry(hass: HomeAssistant, entry):
     """Handle reload of the config entry."""
