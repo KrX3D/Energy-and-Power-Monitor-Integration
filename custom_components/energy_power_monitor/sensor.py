@@ -86,6 +86,7 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
 
     return valid_entities
 
+
 class EnergyandPowerMonitorSensor(SensorEntity):
     """Representation of an Energy and Power Monitor sensor."""
     
