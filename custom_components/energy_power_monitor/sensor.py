@@ -75,17 +75,14 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
 
     for entity_id in entities:
         if hass.states.get(entity_id):
-            _LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
+            #_LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
             valid_entities.append(entity_id)  # Keep the entity if it exists
         else:
-            _LOGGER.warning(f"Entity {entity_id} no longer exists. Removing it.")
+            _LOGGER.warning(f"Entity {entity_id} no longer exists. Please removing it, by clicking Config on the room and than OK.")
     
-    # Update the selected_entities attribute with valid ones in the config entry
-    #entry.data['entities'] = valid_entities
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
 
     return valid_entities
-
 
 class EnergyandPowerMonitorSensor(SensorEntity):
     """Representation of an Energy and Power Monitor sensor."""
