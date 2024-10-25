@@ -44,10 +44,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         entity_type = entry.data.get('entity_type')
         smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-        entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
-        _LOGGER.debug(f"Entities after check: {entities_checked}")
+        # Check and remove non-existent entities
+        entities_checked = await check_and_remove_nonexistent_entities(hass, entities, entry)
+        
+        if entities_checked is None:  # Handle if no valid entities were found
+            _LOGGER.error("No valid entities found after checking.")
+            return False
 
-        _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
+        _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities_checked}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
         if not room_name or not isinstance(entities, list):
             _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
@@ -81,11 +85,11 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
         else:
             _LOGGER.warning(f"Entity {entity_id} no longer exists. Removing it.")
     
-    # Update the selected_entities attribute with valid ones in the config entry
-    entry.data['entities'] = valid_entities
-    _LOGGER.debug(f"Valid entities after check: {valid_entities}")
+    if valid_entities != entities:  # Check if entities changed
+        # Update the entry with valid entities
+        entry.update({'entities': valid_entities})  # Use entry.update() instead of direct assignment
 
-    return valid_entities
+    return valid_entities if valid_entities else None  # Return valid entities or None if none found
 
 class EnergyandPowerMonitorSensor(SensorEntity):
     """Representation of an Energy and Power Monitor sensor."""
