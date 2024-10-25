@@ -84,7 +84,6 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     #entry.data['entities'] = valid_entities
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
 
-
     return valid_entities
 
 class EnergyandPowerMonitorSensor(SensorEntity):
