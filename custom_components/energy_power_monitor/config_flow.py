@@ -454,6 +454,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         # Construct the base entity ID without suffix
         base_entity_id = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}"
+        _LOGGER.debug(f"Current room base_entity_id: {base_entity_id}")
         entity_id = None
 
         # Check for the existence of either _power or _energy
