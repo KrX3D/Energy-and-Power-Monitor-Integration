@@ -6,6 +6,7 @@ from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_MET
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.event import async_track_time_interval
 from datetime import timedelta
 
@@ -67,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     async def reload_integration_periodically(now):
         """Reload the integration every 5 minutes."""
         _LOGGER.debug("Reloading the integration automatically after 5 minutes.")
-        await check_and_setup_entities()
+        await hass.config_entries.async_reload(entry.entry_id)
 
     # Start the periodic reloader
     async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
