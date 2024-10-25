@@ -27,6 +27,7 @@ async def get_translated_none(hass: HomeAssistant):
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
+    _LOGGER.debug("async_setup_entry function start...")
     async def check_and_setup_entities(event):
         """Check for and remove non-existent entities when Home Assistant is fully started."""
         if not hass.is_running:
@@ -65,6 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
 async def async_reload_entry(hass: HomeAssistant, entry):
     """Handle reload of the config entry."""
+    _LOGGER.debug("async_reload_entry function start...")
     # Simply call the async_setup_entry to reapply the configuration
     await async_setup_entry(hass, entry)
 
