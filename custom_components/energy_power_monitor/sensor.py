@@ -6,6 +6,8 @@ from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_MET
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.helpers.event import async_track_time_interval
+from datetime import timedelta
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -36,7 +38,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         else:
             _LOGGER.debug("Home Assistant is fully started, proceeding with entity check...")
 
-
         # Fetch translations
         TRANSLATION_NONE = await get_translated_none(hass)
             
@@ -63,6 +64,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
+    async def reload_integration_periodically(now):
+        """Reload the integration every 5 minutes."""
+        _LOGGER.debug("Reloading the integration automatically after 5 minutes.")
+        await async_reload_entry(hass, entry)
+
+    # Start the periodic reloader
+    async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
+    
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
