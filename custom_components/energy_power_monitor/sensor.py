@@ -81,7 +81,7 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
             _LOGGER.warning(f"Entity {entity_id} no longer exists. Removing it.")
     
     # Update the selected_entities attribute with valid ones in the config entry
-    entry.data['entities'] = valid_entities
+    #entry.data['entities'] = valid_entities
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
 
     return valid_entities
