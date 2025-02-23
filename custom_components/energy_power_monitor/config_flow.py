@@ -573,7 +573,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
    
         self.hass.config_entries.async_update_entry(
             self.config_entry,
-            title=room_name,
+            title=f"{translated_entity_type} - {room_name}",
             data={
                 CONF_ROOM: room_name,
                 CONF_SMART_METER_DEVICE: smart_meter_device,
