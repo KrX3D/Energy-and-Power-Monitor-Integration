@@ -35,7 +35,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     await hass.config_entries.async_forward_entry_unload(entry, "sensor")
     return True
 
-
 # Handle removal of the config entry
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Remove a config entry."""
