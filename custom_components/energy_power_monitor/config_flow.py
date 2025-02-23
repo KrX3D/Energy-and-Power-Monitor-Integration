@@ -13,7 +13,7 @@ import re
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
-    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
+    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -584,35 +584,3 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         )
         
         await self.hass.config_entries.async_reload(self.config_entry.entry_id)
-
-    async def async_remove_sensor_entities(self, room_name):
-        """Remove all sensor entities associated with the old room name and log them."""
-        entity_registry = entity_registry_async_get(self.hass)
-        current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
-        _LOGGER.info(f"Entity Type: {current_entity_type}")
-        
-        # Sanitize the room name by replacing spaces with underscores        
-        #_LOGGER.debug(f"room name: {room_name}")
-        normalized_name = unicodedata.normalize('NFKD', room_name).encode('ascii', 'ignore').decode('utf-8')
-        sanitized_room_name = normalized_name.replace(" ", "_")
-        sanitized_room_name = sanitized_room_name.replace("-", "_")
-        #_LOGGER.debug(f"Sanitized room name: {sanitized_room_name}")
-        
-        entity_id_se = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}_{current_entity_type}"
-        entity_id_cr = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}_untracked_{current_entity_type}"
-        _LOGGER.info(f"Attempting to remove entity: {entity_id_se} and {entity_id_cr}")
-
-        if entity_id_se in entity_registry.entities:
-            _LOGGER.info(f"Removing entity from registry: {entity_id_se}")
-            entity_registry.async_remove(entity_id_se)
-        if self.hass.states.get(entity_id_se):
-            _LOGGER.info(f"Removing entity state: {entity_id_se}")
-            self.hass.states.async_remove(entity_id_se)
-            
-        if entity_id_cr in entity_registry.entities:
-            _LOGGER.info(f"Removing entity from registry: {entity_id_cr}")
-            entity_registry.async_remove(entity_id_cr)
-        if self.hass.states.get(entity_id_cr):
-            _LOGGER.info(f"Removing entity state: {entity_id_cr}")
-            self.hass.states.async_remove(entity_id_cr)
-
