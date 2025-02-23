@@ -31,11 +31,12 @@
                 "title": "Raum neu konfigurieren",
                 "description": "Ändern Sie den Raumnamen, Smart Monitor Gerät oder die Sensoren",
                 "data": {
-					"room": "Raum",
-					"smart_monitor_device": "Smart Monitor Gerät",
-					"entities": "Entitäten",
-					"integration_rooms": "Angelegte Räume",
-                    "none": "Keine"
+			"room": "Raum",
+			"smart_monitor_device": "Smart Monitor Gerät",
+			"entities": "Entitäten",
+			"integration_rooms": "Angelegte Räume",
+			"none": "Keine",
+			"update_interval": "Update Interval (Sekunden)"
                 }
             },
             "select_entities": {
