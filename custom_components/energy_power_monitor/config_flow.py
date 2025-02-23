@@ -266,7 +266,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-            selected_smd = user_input.get(CONF_SMART_METER_DEVICE, [])
+            selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                     
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # Coerce empty string to TRANSLATION_NONE
@@ -377,11 +377,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, [])
+                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                         
                 # Check if the user has deselected the smart meter device
-                if selected_smd == "":
-                   selected_smd = TRANSLATION_NONE  # Set to "None" if deselected
+                selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
 
                 # Use the old config entry's data to get the entity type
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
