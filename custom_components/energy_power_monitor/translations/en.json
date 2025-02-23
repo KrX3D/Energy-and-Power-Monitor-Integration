@@ -35,8 +35,7 @@
                     "smart_monitor_device": "Smart Monitor Device",
                     "entities": "Entities",
                     "integration_rooms": "Created Rooms",
-                    "none": "None",
-                    "update_interval": "Update Interval (seconds)"
+                    "none": "None"
                 }
             },
             "select_entities": {
