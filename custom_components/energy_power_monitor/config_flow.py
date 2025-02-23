@@ -541,7 +541,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
             vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.In(sorted_options),
-            vol.Optional(CONF_ENTITIES, default=filtered_old_entities): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
 
@@ -563,7 +563,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                         if isinstance(sensor, EnergyandPowerMonitorSensor):
                             await sensor.async_remove_sensor_entities(old_room)
 
-    async def async_create_new_config(self, user_input):
+    async def async_create_new_config(self, user_input, translated_entity_type):
         """Create the new configuration."""
         room_name = user_input[CONF_ROOM]
         smart_meter_device = user_input.get(CONF_SMART_METER_DEVICE)  # Get the smart meter device from the user input
