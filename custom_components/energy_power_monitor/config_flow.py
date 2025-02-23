@@ -269,9 +269,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE, [])
                     
             _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # Check if the user has deselected the smart meter device
-            if selected_smd == "":
-               selected_smd = TRANSLATION_NONE # Set to "None" if deselected
+            # Coerce empty string to TRANSLATION_NONE
+            selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
