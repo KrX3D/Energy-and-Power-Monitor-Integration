@@ -398,7 +398,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_ENTITIES: selected_entities,
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
-                await self.async_create_new_config(self.options)
+                await self.async_create_new_config(self.options, translated_entity_type)
                 
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
