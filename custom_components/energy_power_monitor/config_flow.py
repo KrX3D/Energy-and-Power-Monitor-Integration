@@ -271,7 +271,6 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # Coerce empty string to TRANSLATION_NONE
             selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
-            
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
             # Get selected entities from the existing rooms
@@ -320,7 +319,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Define the second GUI form for entity and room selection
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.All(vol.Coerce(lambda x: x if x != "" else TRANSLATION_NONE), vol.In(sorted_options)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
