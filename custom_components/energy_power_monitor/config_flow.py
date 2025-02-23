@@ -363,7 +363,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         old_room = self.config_entry.data.get(CONF_ROOM, "")
         old_entities_smd = self.config_entry.data.get(CONF_SMART_METER_DEVICE, "")
-        old_entities = set(self.config_entry.data.get(CONF_ENTITIES, []))
+        old_entities = self.config_entry.data.get(CONF_ENTITIES, [])
         old_integration_rooms = self.config_entry.data.get(CONF_INTEGRATION_ROOMS, [])
         current_room = self.config_entry.data.get(CONF_ROOM, "")
 
