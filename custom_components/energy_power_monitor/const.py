@@ -8,5 +8,9 @@ CONF_ENTITIES = "entities"
 CONF_ENTITY_TYPE = "entity_type"
 CONF_INTEGRATION_ROOMS = "integration_rooms"
 
+# New update interval configuration
+CONF_UPDATE_INTERVAL = "update_interval"
+DEFAULT_UPDATE_INTERVAL = 60  # in seconds
+
 ENTITY_TYPE_POWER = "power"
 ENTITY_TYPE_ENERGY = "energy"
