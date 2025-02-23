@@ -445,8 +445,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         # Sanitize the room name by replacing spaces with underscores        
         #_LOGGER.debug(f"room name: {current_room}")
         normalized_name = unicodedata.normalize('NFKD', current_room).encode('ascii', 'ignore').decode('utf-8')
-        sanitized_room_name = normalized_name.replace(" ", "_")
-        sanitized_room_name = sanitized_room_name.replace("-", "_")
+        sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_")
         #_LOGGER.debug(f"Sanitized room name: {sanitized_room_name}")
         
         # Construct the base entity ID without suffix
