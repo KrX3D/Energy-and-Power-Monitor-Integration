@@ -563,7 +563,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                         if isinstance(sensor, EnergyandPowerMonitorSensor):
                             await sensor.async_remove_sensor_entities(old_room)
 
-    async def async_create_new_config(self, user_input, translated_entity_type):
+    async def async_create_new_config(self, user_input):
         """Create the new configuration."""
         room_name = user_input[CONF_ROOM]
         smart_meter_device = user_input.get(CONF_SMART_METER_DEVICE)  # Get the smart meter device from the user input
