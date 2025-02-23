@@ -2,11 +2,10 @@ import logging
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy
-from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_METER_DEVICE
+from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL, CONF_ENTITIES
 from homeassistant.helpers.translation import async_get_translations
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.event import async_track_time_interval
 from datetime import timedelta
 
@@ -16,22 +15,16 @@ ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
 async def get_translated_none(hass: HomeAssistant):
     """Fetch the translated 'None' value."""
     user_language = hass.config.language
-    #_LOGGER.debug(f"SENSOR User Language:: {user_language}")
-    
     translations = await async_get_translations(hass, user_language, "config", {DOMAIN})
     none_translation_key = f"component.{DOMAIN}.config.step.select_entities.data.none"
-    
-    _LOGGER.debug(f"Full translations fetched: {translations}")
-    
     translated_none = translations.get(none_translation_key, "None")
-    #_LOGGER.debug(f"Fetched translation for 'None': {translated_none}")
-    
     return translated_none
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
-    async def check_and_setup_entities(event=None):  # Set event=None to make it optional
+
+    async def check_and_setup_entities(event=None):
         """Check for and remove non-existent entities when Home Assistant is fully started."""
         if not hass.is_running:
             _LOGGER.debug("Home Assistant is still not fully running, waiting...")
@@ -44,15 +37,21 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             
         # Fetch configuration data
         room_name = entry.data.get('room')
-        entities = entry.data.get('entities')
+        entities = entry.data.get(CONF_ENTITIES)
         entity_type = entry.data.get('entity_type')
         smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
+        # Remove entities that no longer exist
         entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        if set(entities_checked) != set(entities):
+            new_data = entry.data.copy()
+            new_data[CONF_ENTITIES] = entities_checked
+            hass.config_entries.async_update_entry(entry, data=new_data)
+            _LOGGER.debug("Config entry updated with valid entities.")
 
         _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities_checked}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
-        if not room_name or not isinstance(entities, list):
+        if not room_name or not isinstance(entities_checked, list):
             _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
             return False
 
@@ -65,22 +64,11 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
-    async def reload_integration_periodically(now):
-        """Reload the integration every 5 minutes."""
-        _LOGGER.debug("Reloading the integration automatically after 5 minutes.")
-        await hass.config_entries.async_reload(entry.entry_id)
-
-    async def start_periodic_reload(event):
-        # Start the periodic reloader
-        async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
-
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
     else:
-        # Otherwise, listen for the start event
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, start_periodic_reload)
 
 def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     """Check if selected entities still exist, and remove those that don't."""
@@ -89,13 +77,11 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
 
     for entity_id in entities:
         if hass.states.get(entity_id):
-            #_LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
             valid_entities.append(entity_id)  # Keep the entity if it exists
         else:
-            _LOGGER.warning(f"Entity {entity_id} no longer exists. Please removing it, by clicking Config on the room and than OK.")
+            _LOGGER.warning(f"Entity {entity_id} no longer exists. Please remove it by clicking Config on the room and then OK.")
     
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
-
     return valid_entities
 
 class EnergyandPowerMonitorSensor(SensorEntity):
@@ -111,6 +97,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         self._entity_type = entity_type  # Power or Energy type
         self._unique_id = self.generate_unique_id()
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        self._unsub_interval = None
 
         _LOGGER.debug(f"EnergyandPowerMonitorSensor initialized: {self.entity_id} for room: {self._room_name}, entity_type: {self._entity_type}")
 
@@ -180,23 +167,41 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     async def async_update(self):
         """Update the sensor state by summing up the values from selected entities."""
         total_value = 0
+        # Update _entities in case some have been removed
+        valid_entities = check_and_remove_nonexistent_entities(self.hass, self._entities, None)
+        self._entities = valid_entities
+
         for entity_id in self._entities:
             entity = self.hass.states.get(entity_id)
             if entity and entity.state not in (None, 'unknown', 'unavailable'):
                 try:
                     entity_value = float(entity.state)
                     total_value += entity_value
-                    #_LOGGER.debug(f"Entity {entity_id} has power value {power_value}")
                 except ValueError:
-                    #_LOGGER.warning(f"Entity {entity_id} has a non-numeric state: {entity.state}")
-                    pass #Remove when uncommenting the logger part
-            #else:
-                #_LOGGER.debug(f"Entity {entity_id} is unavailable or has an unknown state.")
+                    pass
 
-        # Limit the decimals to 1 and ensure the value is not negative
         self._state = max(0, round(total_value, 1))
 
-        #_LOGGER.info(f"Updated EnergyandPowerMonitorSensor {self.entity_id} state to {self._state} {self.unit_of_measurement}")
+    async def async_update_and_write(self, now):
+        """Helper to update state and write it."""
+        await self.async_update()
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Set up a timer to update sensor state."""
+        # Get update interval from the config entry data
+        entry_data = self.hass.data[DOMAIN].get(self._entry_id, {})
+        update_interval = entry_data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+        self._unsub_interval = async_track_time_interval(
+            self.hass, self.async_update_and_write, timedelta(seconds=update_interval)
+        )
+        await super().async_added_to_hass()
+
+    async def async_will_remove_from_hass(self):
+        """Cancel the update interval when removed."""
+        if self._unsub_interval:
+            self._unsub_interval()
+            self._unsub_interval = None
 
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor."""
@@ -211,9 +216,8 @@ class SmartMeterSensor(SensorEntity):
         self._entry_id = entry_id
         self._unique_id = self.generate_unique_id()
         self._energy_power_monitor_sensor = energy_power_monitor_sensor
-
-        # Generate the entity ID for this sensor
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        self._unsub_interval = None
 
         _LOGGER.debug(f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, smart_meter_device: {self._smart_meter_device}")
 
@@ -234,22 +238,23 @@ class SmartMeterSensor(SensorEntity):
         smart_meter_value = self.hass.states.get(self._smart_meter_device)
 
         if (energy_power_monitor_value is not None and smart_meter_value is not None and
-                energy_power_monitor_value != "unknown" and smart_meter_value.state != "unknown" and
-                energy_power_monitor_value != "unavailable" and smart_meter_value.state != "unavailable"):
-            # Calculate the difference and ensure it's not negative
-            value = float(smart_meter_value.state) - float(energy_power_monitor_value)
-            return max(0, round(value, 1))
+                energy_power_monitor_value not in ("unknown", "unavailable") and
+                smart_meter_value.state not in ("unknown", "unavailable")):
+            try:
+                value = float(smart_meter_value.state) - float(energy_power_monitor_value)
+                return max(0, round(value, 1))
+            except ValueError:
+                return None
         return None
 
     @property
     def unique_id(self):
         """Return the unique ID of the Smart Meter sensor."""
-        # Generate a unique ID using the room name and the sanitized smart meter device name
-        sanitized_device_name = self._smart_meter_device.split('.')[-1]  # Get the name part after the last dot
+        sanitized_device_name = self._smart_meter_device.split('.')[-1]
         if sanitized_device_name.endswith('_power'):
-            sanitized_device_name = sanitized_device_name[:-6]  # Remove _power
+            sanitized_device_name = sanitized_device_name[:-6]
         elif sanitized_device_name.endswith('_energy'):
-            sanitized_device_name = sanitized_device_name[:-7]  # Remove _energy
+            sanitized_device_name = sanitized_device_name[:-7]
         
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
         
@@ -270,7 +275,7 @@ class SmartMeterSensor(SensorEntity):
         """Return additional attributes of the sensor."""
         return {
             "Selected Smart Meter Device": self._smart_meter_device,
-            "Energy and Power Monitor": self._energy_power_monitor_sensor.entity_id  # Add the entity ID from EnergyandPowerMonitorSensor
+            "Energy and Power Monitor": self._energy_power_monitor_sensor.entity_id
         }
 
     @property
@@ -299,7 +304,23 @@ class SmartMeterSensor(SensorEntity):
         elif self._entity_type == ENTITY_TYPE_ENERGY:
             return SensorDeviceClass.ENERGY
             
-    @property
-    def area_id(self):
-        """Return the area ID for the sensor."""
-        return self._entry_id  # or another relevant identifier
+    async def async_update_and_write(self, now):
+        """Helper to update sensor state and write it."""
+        # For SmartMeterSensor, no need to update internal state as it is computed on the fly.
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Set up periodic update for the sensor."""
+        entry_data = self.hass.data[DOMAIN].get(self._entry_id, {})
+        update_interval = entry_data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+        self._unsub_interval = async_track_time_interval(
+            self.hass, self.async_update_and_write, timedelta(seconds=update_interval)
+        )
+        await super().async_added_to_hass()
+
+    async def async_will_remove_from_hass(self):
+        """Cancel the update interval when removed."""
+        if self._unsub_interval:
+            self._unsub_interval()
+            self._unsub_interval = None
+
