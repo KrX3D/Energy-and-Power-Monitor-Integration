@@ -362,7 +362,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         old_room = self.config_entry.data.get(CONF_ROOM, "")
         old_entities_smd = self.config_entry.data.get(CONF_SMART_METER_DEVICE, "")
-        old_entities = self.config_entry.data.get(CONF_ENTITIES, [])
+        old_entities = set(self.config_entry.data.get(CONF_ENTITIES, []))
         old_integration_rooms = self.config_entry.data.get(CONF_INTEGRATION_ROOMS, [])
         current_room = self.config_entry.data.get(CONF_ROOM, "")
 
@@ -389,7 +389,9 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
-                # Save the entry
+                # Get translated entity type for title
+                translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
+                
                 self.options.update({
                     CONF_ROOM: user_input[CONF_ROOM],
                     CONF_SMART_METER_DEVICE: selected_smd,
@@ -397,8 +399,6 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options)
-
-                translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
                 
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
