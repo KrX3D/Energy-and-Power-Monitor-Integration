@@ -56,20 +56,14 @@ Here are some known problems that I am currently working on fixing, and some i c
 1. **Add/Reconfigure GUI:**
  - In the Smart Meter Device dropdown, how can I remove the 'X' or set the default to "None" when the 'X' is clicked, currently it is empty when clicked X
  - How can I update the entities in one dropdown box when an entity is selected in a second dropdown box (e.g., Smart Meter Device and Entity dropdowns)?
- 
-2. **Add GUI:**
- - When creating an entry like "Living Room" the titel gets updated to "Power - Living Room", but on the reconfigure button the "Power - " part get removed from the title  (see "config_flow.py", line 407). The title is set as title=f"{translated_entity_type} - {self.options[CONF_ROOM]}".
- 
-3. **Reconfigure GUI:**
+  
+2. **Reconfigure GUI:**
  - When renaming an option, how can I update/delete the new sensor name across all other options? Specifically, this affects the sensor attributes "selected_entities" and "Energy and Power Monitor".
  
-4. **Translations:**
- - Only German and English translations have been tested. All other translations were created using ChatGPT, so please let me know if there are any inaccuracies.
- 
-5. **Sensor Update Interval:**
+3. **Sensor Update Interval:**
  - The update interval for all sensors needs better handling.
    
-6. **Sensor removed in Home Assistant:**
+4. **Sensor removed in Home Assistant:**
  - If a sensor was removed or renamed in Home Assistant, also remove it in this integration if it was selected
 
 ---
