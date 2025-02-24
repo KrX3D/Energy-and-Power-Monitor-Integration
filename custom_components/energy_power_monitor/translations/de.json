@@ -32,8 +32,7 @@
                 "description": "Ändern Sie den Raumnamen, Smart Monitor Gerät oder die Sensoren",
                 "data": {
 			"room": "Raum",
-			"smart_monitor_device": "Smart Monitor Gerät",
-          		"smart_meter_device": "Smart Monitor Gerät2",
+          		"smart_meter_device": "Smart Monitor Gerät",
 			"entities": "Entitäten",
 			"integration_rooms": "Angelegte Räume",
 			"none": "Keine",
