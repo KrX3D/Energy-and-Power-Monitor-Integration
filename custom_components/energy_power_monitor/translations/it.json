@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "Dispositivo di Monitoraggio Intelligente",
+                    "smart_meter_device": "Dispositivo di Monitoraggio Intelligente",
                     "entities": "Entità",
                     "integration_rooms": "Stanze Create",
                     "none": "Nessuna"
@@ -32,7 +32,7 @@
                 "description": "Cambia il nome della stanza, il dispositivo di monitoraggio intelligente o i sensori",
                 "data": {
                     "room": "Stanza",
-                    "smart_monitor_device": "Dispositivo di Monitoraggio Intelligente",
+                    "smart_meter_device": "Dispositivo di Monitoraggio Intelligente",
                     "entities": "Entità",
                     "integration_rooms": "Stanze Create",
                     "none": "Nessuna"
