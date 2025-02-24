@@ -278,36 +278,46 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 continue
             data = dict(entry.data)
             updated = False
+
+            # Update integration_rooms list
             if CONF_INTEGRATION_ROOMS in data:
-                new_rooms = []
+                new_rooms_list = []
                 for room in data[CONF_INTEGRATION_ROOMS]:
                     if room == old_main_id:
-                        new_rooms.append(new_main_id)
+                        new_rooms_list.append(new_main_id)
                         updated = True
-                        _LOGGER.debug(f"Updated integration room from {old_main_id} to {new_main_id} in entry {entry.entry_id}")
+                        _LOGGER.debug(f"Updated integration room: {room} -> {new_main_id} in entry {entry.entry_id}")
                     else:
-                        new_rooms.append(room)
-                data[CONF_INTEGRATION_ROOMS] = new_rooms
+                        new_rooms_list.append(room)
+                data[CONF_INTEGRATION_ROOMS] = new_rooms_list
+                _LOGGER.debug(f"data[{CONF_INTEGRATION_ROOMS}] = {new_rooms_list}")
+
+            # Update entities list
             if CONF_ENTITIES in data:
-                new_entities = []
+                new_entities_list = []
                 for ent in data[CONF_ENTITIES]:
                     if ent == old_main_id:
-                        new_entities.append(new_main_id)
+                        new_entities_list.append(new_main_id)
                         updated = True
-                        _LOGGER.debug(f"Updated entity from {old_main_id} to {new_main_id} in entry {entry.entry_id}")
+                        _LOGGER.debug(f"Updated entity: {ent} -> {new_main_id} in entry {entry.entry_id}")
                     elif ent.startswith(old_smart_prefix):
-                        new_entities.append(new_smart_prefix + ent[len(old_smart_prefix):])
+                        new_ent = new_smart_prefix + ent[len(old_smart_prefix):]
+                        new_entities_list.append(new_ent)
                         updated = True
-                        _LOGGER.debug(f"Updated smart entity from prefix {old_smart_prefix} to {new_smart_prefix} in entry {entry.entry_id}")
+                        _LOGGER.debug(f"Updated smart entity from prefix {old_smart_prefix} to {new_smart_prefix}: {ent} -> {new_ent} in entry {entry.entry_id}")
                     else:
-                        new_entities.append(ent)
-                data[CONF_ENTITIES] = new_entities
+                        new_entities_list.append(ent)
+                        _LOGGER.debug(f"Appending entity without change: {ent} in entry {entry.entry_id}")
+                data[CONF_ENTITIES] = new_entities_list
+                _LOGGER.debug(f"data[{CONF_ENTITIES}] = {new_entities_list}")
             if updated:
                 _LOGGER.debug(f"Updating references in config entry {entry.entry_id} from {old_main_id} to {new_main_id}")
                 self.hass.config_entries.async_update_entry(entry, data=data)
         # After updating other config entries, reload them (for logging purposes)
         _LOGGER.debug("Reloading all config entries after updating references")
         await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+        _LOGGER.debug("Completed update_all_references")
+
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
