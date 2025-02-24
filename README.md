@@ -56,14 +56,11 @@ Here are some known problems that I am currently working on fixing, and some i c
 1. **Add/Reconfigure GUI:**
  - In the Smart Meter Device dropdown, you can hit the 'X' and the dropdown will be empty, it would be nice if it selects None when doing that. Fixed it so that if empty None is selected when adding a room.
  - How can I update the entities in one dropdown box when an entity is selected in a second dropdown box (e.g., Smart Meter Device and Entity dropdowns)?
-  
-2. **Reconfigure GUI:**
- - When renaming an option, how can I update/delete the new sensor name across all other options? Specifically, this affects the sensor attributes "selected_entities".
  
-3. **Sensor Update Interval:**
+2. **Sensor Update Interval:**
  - The update interval for all sensors needs better handling.
    
-4. **Sensor removed in Home Assistant:**
+3. **Sensor removed in Home Assistant:**
  - If a sensor was removed or renamed in Home Assistant, also remove it in this integration if it was selected, currently it is removed and the integration works but you need to manually open the room and hit ok to save it again or else a message will apways pop um in the logs
 
 ---
