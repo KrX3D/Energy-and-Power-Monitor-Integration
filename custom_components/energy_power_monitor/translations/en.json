@@ -16,6 +16,7 @@
       "select_entities": {
         "data": {
           "smart_monitor_device": "Smart Device Meter",
+          "smart_meter_device": "Smart Device Meter2",
           "entities": "Entities",
           "integration_rooms": "Created Rooms",
           "none": "None"
@@ -33,6 +34,7 @@
         "data": {
           "room": "Room",
           "smart_monitor_device": "Smart Device Meter",
+          "smart_meter_device": "Smart Device Meter2",
           "entities": "Entities",
           "integration_rooms": "Created Rooms",
           "none": "None",
