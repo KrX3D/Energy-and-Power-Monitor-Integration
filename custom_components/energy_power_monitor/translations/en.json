@@ -15,8 +15,7 @@
       },
       "select_entities": {
         "data": {
-          "smart_monitor_device": "Smart Device Meter",
-          "smart_meter_device": "Smart Device Meter2",
+          "smart_meter_device": "Smart Device Meter",
           "entities": "Entities",
           "integration_rooms": "Created Rooms",
           "none": "None"
@@ -33,8 +32,7 @@
         "description": "Change the room name, Smart Monitor device, or sensors",
         "data": {
           "room": "Room",
-          "smart_monitor_device": "Smart Device Meter",
-          "smart_meter_device": "Smart Device Meter2",
+          "smart_meter_device": "Smart Device Meter",
           "entities": "Entities",
           "integration_rooms": "Created Rooms",
           "none": "None",
