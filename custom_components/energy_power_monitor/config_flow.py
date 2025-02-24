@@ -272,13 +272,13 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         smart_meter_options = list(filtered_entities)  # Use a list for filtered entities
         # Sort the options, ensuring "Keine" stays at the top
         sorted_options = sorted(smart_meter_options)  # Sort the rest of the options
-        sorted_options.insert(0, TRANSLATION_NONE)  # Reinsert "Keine" at the top
+        sorted_options.insert(0, TRANSLATION_NONE)  # Reinsert "None" at the top
         
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported by default config flows.
         
         # Define the second GUI form for entity and room selection
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.All(vol.Coerce(coerce_none), vol.In(sorted_options)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
