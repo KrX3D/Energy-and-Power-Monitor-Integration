@@ -16,7 +16,6 @@ from .const import (
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
     CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
 )
-
 _LOGGER = logging.getLogger(__name__)
 
 # Shared functions
@@ -62,7 +61,6 @@ def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_e
             room_entities = get_filtered_entities_for_room(hass, room_id)
             if room_entities:
                 selected_entities.extend(room_entities)
-
             # Check for '_untracked_' entity
             untracked_entity = f"{room_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
             _LOGGER.debug(f"Checking for untracked entity: {untracked_entity}")
@@ -81,11 +79,9 @@ def get_selected_entities_for_rooms(hass, selected_existing_rooms, integration_e
 async def get_translated_entity_type(hass, entity_type):
     """Fetch the translated entity type (Power/Energy)."""
     user_language = hass.config.language
-    
     #_LOGGER.debug(f"User Language:: {user_language}")  # Log the result
     # Fetch translations for your specific integration and the correct context (config_flow)
     translations = await async_get_translations(hass, user_language, "config", {DOMAIN})
-    
     #_LOGGER.debug(f"Fetched translations for entity_type: {translations}")  # Log the fetched translations
      
     if entity_type == 'energy':
@@ -98,17 +94,11 @@ async def get_translated_entity_type(hass, entity_type):
 async def get_translated_none(hass):
     """Fetch the translated 'None' value."""
     user_language = hass.config.language
-    
     #_LOGGER.debug(f"User Language:: {user_language}")  # Log the result
     translations = await async_get_translations(hass, user_language, "config", {DOMAIN})
-    
     # Construct the translation key
     none_translation_key = f"component.{DOMAIN}.config.step.select_entities.data.none"
-    
-    # Log the full translations for debugging
     #_LOGGER.debug(f"Full translations fetched: {translations}")
-    
-    # Fetch the translation for 'none'
     translated_none = translations.get(none_translation_key, "None")
     _LOGGER.debug(f"Translated 'None': {translated_none}")
     return translated_none
@@ -116,7 +106,6 @@ async def get_translated_none(hass):
 def get_selected_smart_meter_devices(hass, filtered_entities):
     """Retrieve the selected smart meter devices from filtered entities."""
     _LOGGER.debug("get_selected_smart_meter_devices function start")
-
     # Filter entities that start with 'sensor.energy_power_monitor'
     old_entities_smd = [entity for entity in filtered_entities if entity.startswith(f'sensor.{DOMAIN}')]
     old_entities_smd_untracked = [entity for entity in old_entities_smd if '_untracked_' in entity]
@@ -125,7 +114,7 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
         state = hass.states.get(entity)  # Get the state of the entity
         if state and 'Selected Smart Meter Device' in state.attributes:
             selected_device = state.attributes['Selected Smart Meter Device']
-            selected_smart_meter_devices.add(selected_device)  # Add the selected device to the set
+            selected_smart_meter_devices.add(selected_device)
     _LOGGER.debug(f"Already created Smart Meter Devices: {old_entities_smd_untracked}")
     _LOGGER.debug(f"Selected smart meter devices: {selected_smart_meter_devices}")
     return selected_smart_meter_devices
@@ -136,30 +125,22 @@ def get_selected_integration_rooms(hass, existing_rooms):
     _LOGGER.debug("get_selected_integration_rooms function start")
     filtered_entities_with_friendly_name = {}  # Initialize a dictionary to store filtered entities and their friendly names
     for entity_id in existing_rooms:  # Iterate over the existing room entity IDs
-
         # Get the entity's state object from Home Assistant
         entity_state = hass.states.get(entity_id)
         if entity_state:
-            # Get the attributes of the entity
             selected_entities = entity_state.attributes.get('selected_entities', [])
-            
             # Filter entities that start with 'sensor.energy_power_monitor' and do not end with '_untracked_'
             for entity in selected_entities:
                 if entity.startswith(f'sensor.{DOMAIN}') and not entity.endswith(('_untracked_power', '_untracked_energy')):
-                    # Get the friendly name directly from the entity's state
                     friendly_name = hass.states.get(entity).attributes.get('friendly_name', entity)
-                    
-                    # Remove the unwanted substring from the friendly name
                     friendly_name = friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
                     filtered_entities_with_friendly_name[entity] = friendly_name
             #_LOGGER.info(f"Room: {entity_id} - Filtered entities: {filtered_entities_with_friendly_name}")
         #else:
             #_LOGGER.warning(f"Entity {entity_id} not found in Home Assistant states.")
-
-    # Sort the filtered entities by friendly name
     sorted_filtered_entities = dict(sorted(filtered_entities_with_friendly_name.items(), key=lambda item: item[1]))
     #_LOGGER.debug(f"Sorted filtered entities with friendly names: {sorted_filtered_entities}")
-    return sorted_filtered_entities  # Return the sorted dictionary
+    return sorted_filtered_entities
 
 @config_entries.HANDLERS.register(DOMAIN)
 class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -173,11 +154,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Store the energy/power selection and room name for use in step 2
             self.selected_type = user_input[CONF_ENTITY_TYPE]
             self.room_name = user_input[CONF_ROOM]
-
             # Proceed to the next step after this input
             return await self.async_step_select_entities()
-
-        # First GUI form for room name and entity type (power/energy)
         data_schema = vol.Schema({
             vol.Required(CONF_ROOM): cv.string,
             vol.Required(CONF_ENTITY_TYPE, default=ENTITY_TYPE_POWER): selector.SelectSelector(
@@ -196,48 +174,38 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_select_entities(self, user_input=None):
         errors = {}
         TRANSLATION_NONE = await get_translated_none(self.hass)
-        
-        # Get the entity registry
-        #entity_registry = er.async_get(self.hass)
-        #all_entities = list(entity_registry.entities.keys())
+        # Get all sensor entity IDs
         all_entities = self.hass.states.async_entity_ids('sensor')
-
         # Filter entities based on the selected type from the first GUI
         if self.selected_type == ENTITY_TYPE_POWER:
             filtered_entities = [entity for entity in all_entities if entity.endswith('_power')]
-        else:  # self.selected_type == ENTITY_TYPE_ENERGY
+        else:
             filtered_entities = [entity for entity in all_entities if entity.endswith('_energy')]
         selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities)
-        
         # Remove entities that start with 'sensor.energy_power_monitor'
         filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
         existing_entities_in_rooms = set()
-
-        # Get the current integration entries
+        # Get current integration entries
         current_entries = self.hass.config_entries.async_entries(DOMAIN)
         for entry in current_entries:
             entities = entry.data.get(CONF_ENTITIES, [])
             existing_entities_in_rooms.update(entities)
         _LOGGER.debug(f"Already picked entities: {existing_entities_in_rooms}")
-        
         # Exclude entities already used by other rooms
         filtered_entities = sorted([
             entity for entity in filtered_entities 
             if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices
         ])
         _LOGGER.debug(f"Filtered entities after: {filtered_entities}")
-        
-        # Retrieve all sensors created by this integration and use friendly_name
         integration_entities = await get_integration_entities(self.hass)
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
             _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # If the user clears the field (empty string), use the translated "None"
+            # If the field is cleared, use the translated 'None'
             selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             _LOGGER.info(f"selected_smd after: {selected_smd}")
-        
             # Get selected entities from the existing rooms
             selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, self.selected_type)
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
@@ -253,24 +221,18 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 }
             )
-
         existing_rooms = {entity_id: friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
                           for entity_id, friendly_name in integration_entities.items()}
-        existing_rooms = dict(sorted(existing_rooms.items(), key=lambda item: item[1]))  # Sort by friendly name
+        existing_rooms = dict(sorted(existing_rooms.items(), key=lambda item: item[1]))
         _LOGGER.info(f"Existing rooms with friendly names: {existing_rooms}")
         assigned_integration_rooms = get_selected_integration_rooms(self.hass, existing_rooms)
-        # Remove rooms from existing_rooms that are present in assigned integration rooms
+        # Remove rooms already assigned
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
-        # Create smart meter options with filtered entities
-        smart_meter_options = list(filtered_entities)  # Use a list for filtered entities
-        # Sort the options, ensuring "None" stays at the top
-        sorted_options = sorted(smart_meter_options)  # Sort the rest of the options
-        sorted_options.insert(0, TRANSLATION_NONE)  # Reinsert "None" at the top
-        
-        # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported by default config flows.
-        
-        # Define the second GUI form for entity and room selection
+        smart_meter_options = list(filtered_entities)
+        sorted_options = sorted(smart_meter_options)
+        sorted_options.insert(0, TRANSLATION_NONE)
+        # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
             vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
@@ -309,38 +271,43 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         old_smart_prefix = f"sensor.{DOMAIN}_{sanitized_old}_untracked_"
         new_smart_prefix = f"sensor.{DOMAIN}_{sanitized_new}_untracked_"
 
+        _LOGGER.debug(f"update_all_references: Updating references from {old_main_id} to {new_main_id}")
         entries = self.hass.config_entries.async_entries(DOMAIN)
         for entry in entries:
             if entry.entry_id == self.config_entry.entry_id:
                 continue
             data = dict(entry.data)
             updated = False
-            # Update integration_rooms list
             if CONF_INTEGRATION_ROOMS in data:
                 new_rooms = []
                 for room in data[CONF_INTEGRATION_ROOMS]:
                     if room == old_main_id:
                         new_rooms.append(new_main_id)
                         updated = True
+                        _LOGGER.debug(f"Updated integration room from {old_main_id} to {new_main_id} in entry {entry.entry_id}")
                     else:
                         new_rooms.append(room)
                 data[CONF_INTEGRATION_ROOMS] = new_rooms
-            # Update entities list
             if CONF_ENTITIES in data:
                 new_entities = []
                 for ent in data[CONF_ENTITIES]:
                     if ent == old_main_id:
                         new_entities.append(new_main_id)
                         updated = True
+                        _LOGGER.debug(f"Updated entity from {old_main_id} to {new_main_id} in entry {entry.entry_id}")
                     elif ent.startswith(old_smart_prefix):
                         new_entities.append(new_smart_prefix + ent[len(old_smart_prefix):])
                         updated = True
+                        _LOGGER.debug(f"Updated smart entity from prefix {old_smart_prefix} to {new_smart_prefix} in entry {entry.entry_id}")
                     else:
                         new_entities.append(ent)
                 data[CONF_ENTITIES] = new_entities
             if updated:
                 _LOGGER.debug(f"Updating references in config entry {entry.entry_id} from {old_main_id} to {new_main_id}")
                 self.hass.config_entries.async_update_entry(entry, data=data)
+        # After updating other config entries, reload them (for logging purposes)
+        _LOGGER.debug("Reloading all config entries after updating references")
+        await self.hass.config_entries.async_reload(self.config_entry.entry_id)
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
@@ -360,12 +327,14 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         integration_entities = await get_integration_entities(self.hass)
         if user_input is not None:
             try:
-                # If the room name has changed, update references in all other config entries
+                # If the room name has changed, update references in all other config entries and then reload this entry
                 if user_input[CONF_ROOM] != old_room:
                     current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
+                    _LOGGER.debug("Room name has changed, updating references...")
                     await self.update_all_references(old_room, user_input[CONF_ROOM], current_entity_type)
+                    _LOGGER.debug("Reloading config entry after updating references")
+                    await self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 
-                # Simulate pressing OK by updating and reloading the config entry after a short delay
                 await self.async_remove_old_config(old_room)
                 await self.async_remove_sensor_entities(old_room)
 
@@ -377,14 +346,12 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 if not selected_smd:
                     selected_smd = TRANSLATION_NONE
 
-                # Use the old config entry's data to get the entity type
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
 
                 # Get selected entities from the existing rooms
                 selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
-                # Get translated entity type for title
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
                 self.options.update({
                     CONF_ROOM: user_input[CONF_ROOM],
@@ -393,7 +360,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options, translated_entity_type)
-                # Instead of forcing a reload that may trigger a loop, simply return the updated entry.
+                # Do not force a reload here to prevent looping; assume the sensor platform updates naturally.
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
                     data=self.options
@@ -428,17 +395,11 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 filtered_old_integration_rooms.append(friendly_name)
         _LOGGER.debug(f"Filtered previously selected Integration Rooms: {filtered_old_integration_rooms}")
 
-        #entity_registry = er.async_get(self.hass)
-        #all_entities = list(entity_registry.entities.keys())
         all_entities = self.hass.states.async_entity_ids('sensor')
 
         # Sanitize the room name by replacing spaces with underscores        
-        #_LOGGER.debug(f"room name: {current_room}")
         normalized_name = unicodedata.normalize('NFKD', current_room).encode('ascii', 'ignore').decode('utf-8')
         sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_")
-        #_LOGGER.debug(f"Sanitized room name: {sanitized_room_name}")
-        
-        # Construct the base entity ID without suffix
         base_entity_id = f"sensor.{DOMAIN}_{sanitized_room_name.lower()}"
         _LOGGER.debug(f"Current room base_entity_id: {base_entity_id}")
         entity_id = None
@@ -452,11 +413,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         device_class = None
         if self.hass.states.get(entity_id):
             state = self.hass.states.get(entity_id)
-            device_class = state.attributes.get('device_class', ENTITY_TYPE_POWER)  # Default to power if not found
+            device_class = state.attributes.get('device_class', ENTITY_TYPE_POWER)
             _LOGGER.debug(f"Current room state: {state}")
             _LOGGER.debug(f"Current room device_class: {device_class}")
 
-        # Filter entities based on the device_class of the current room's sensor
         if device_class == ENTITY_TYPE_POWER:
             filtered_entities = [entity for entity in all_entities if entity.endswith('_power')]
         elif device_class == ENTITY_TYPE_ENERGY:
@@ -465,12 +425,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             filtered_entities = [entity for entity in all_entities if entity.endswith('_power') or entity.endswith('_energy')]
         selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities)
 
-        #_LOGGER.debug(f"Filtered entities before energy_power_monitor removal: {filtered_entities}")
-        # Remove entities that start with 'sensor.energy_power_monitor'
         filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
-        #_LOGGER.debug(f"Filtered entities after energy_power_monitor removal: {filtered_entities}")
-
-        # Convert friendly names to entity IDs for the GUI options
         existing_rooms_for_gui = {friendly_name: entity_id for entity_id, friendly_name in existing_rooms.items()}
         selected_integration_rooms = [existing_rooms_for_gui[name] for name in filtered_old_integration_rooms if name in existing_rooms_for_gui]
         _LOGGER.debug(f"Filtered selected_integration_rooms: {selected_integration_rooms}")
@@ -479,36 +434,27 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
         existing_entities_in_rooms = set()
 
-        # Get the current integration entries
         current_entries = self.hass.config_entries.async_entries(DOMAIN)
         for entry in current_entries:
             entities = entry.data.get(CONF_ENTITIES, [])
             existing_entities_in_rooms.update(entities)
         _LOGGER.debug(f"Already picked entities: {existing_entities_in_rooms}")
         
-        # Exclude entities already used by other rooms
         filtered_entities = sorted([entity for entity in filtered_entities if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices])
-        
-        # Combine filtered entities with existing entities in the room
-        filtered_entities = sorted(set(filtered_entities))  # Ensure filtered_entities is also a set
+        filtered_entities = sorted(set(filtered_entities))
         combined_entities = sorted(filtered_old_entities.union(filtered_entities))
         _LOGGER.debug(f"Combined entities: {combined_entities}")
 
-        # Combine smart meter options with old_entities_smd if not empty
-        smart_meter_options = sorted(filtered_entities)  # Sort the rest of the options
+        smart_meter_options = sorted(filtered_entities)
         if old_entities_smd and old_entities_smd != TRANSLATION_NONE:
-            # Ensure old_entities_smd contains only valid sensor entities
             _LOGGER.debug(f"old_entities_smd entities: {old_entities_smd}")
             smart_meter_options.insert(0, old_entities_smd)
             _LOGGER.debug(f"smart_meter_options entities: {smart_meter_options}")
 
-        # Sort the options, ensuring "None" stays at the top
-        sorted_options = sorted(smart_meter_options)  # Sort the rest of the options
-        sorted_options.insert(0, TRANSLATION_NONE)  # Reinsert "None" at the top
-
+        sorted_options = sorted(smart_meter_options)
+        sorted_options.insert(0, TRANSLATION_NONE)
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
-        # Check if the previous smart meter device is None or empty
         default_smart_meter_device = old_entities_smd if old_entities_smd else TRANSLATION_NONE
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
@@ -535,9 +481,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         room_name = user_input[CONF_ROOM]
         smart_meter_device = user_input.get(CONF_SMART_METER_DEVICE)  # Get the smart meter device from the user input
         entities = user_input[CONF_ENTITIES]
-           
         #_LOGGER.info(f"Creating new configuration for room: {room_name} with entities: {entities} and smart meter: {smart_meter_device}")
-   
         self.hass.config_entries.async_update_entry(
             self.config_entry,
             title=f"{translated_entity_type} - {room_name}",
@@ -556,8 +500,6 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         entity_registry = entity_registry_async_get(self.hass)
         current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
         _LOGGER.info(f"Entity Type: {current_entity_type}")
-        
-        # Sanitize the room name by replacing spaces with underscores        
         #_LOGGER.debug(f"room name: {room_name}")
         normalized_name = unicodedata.normalize('NFKD', room_name).encode('ascii', 'ignore').decode('utf-8')
         sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_")
