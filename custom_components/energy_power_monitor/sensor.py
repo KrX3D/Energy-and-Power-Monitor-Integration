@@ -49,10 +49,15 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
         entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        if set(entities_checked) != set(entities):
+            new_data = entry.data.copy()
+            new_data[CONF_ENTITIES] = entities_checked
+            hass.config_entries.async_update_entry(entry, data=new_data)
+            _LOGGER.debug("Config entry updated with valid entities.")
 
         _LOGGER.debug(f"Setting up Energy and Power Monitor sensor: room_name={room_name}, entities={entities_checked}, smart_meter_device={smart_meter_device}, entry_id={entry.entry_id}, entity_type={entity_type}")
 
-        if not room_name or not isinstance(entities, list):
+        if not room_name or not isinstance(entities_checked, list):
             _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
             return False
 
