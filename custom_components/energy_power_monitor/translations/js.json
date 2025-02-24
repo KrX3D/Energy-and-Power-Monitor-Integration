@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "スマートモニターデバイス",
+                    "smart_meter_device": "スマートモニターデバイス",
                     "entities": "エンティティ",
                     "integration_rooms": "作成された部屋",
                     "none": "なし"
@@ -32,7 +32,7 @@
                 "description": "部屋の名前、スマートモニターデバイス、またはセンサーを変更します",
                 "data": {
                     "room": "部屋",
-                    "smart_monitor_device": "スマートモニターデバイス",
+                    "smart_meter_device": "スマートモニターデバイス",
                     "entities": "エンティティ",
                     "integration_rooms": "作成された部屋",
                     "none": "なし"
