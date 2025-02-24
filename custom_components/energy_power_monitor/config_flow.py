@@ -340,7 +340,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 data[CONF_ENTITIES] = new_entities
             if updated:
                 _LOGGER.debug(f"Updating references in config entry {entry.entry_id} from {old_main_id} to {new_main_id}")
-                #self.hass.config_entries.async_update_entry(entry, data=data)
+                self.hass.config_entries.async_update_entry(entry, data=data)
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
