@@ -254,5 +254,4 @@ class SmartMeterSensor(SensorEntity):
             self._entities = new_entities
         # Force an immediate update instead of waiting for the next poll.
         await self.async_update()
-        self.async_write_ha_state()
         await self.async_update_ha_state(True)
