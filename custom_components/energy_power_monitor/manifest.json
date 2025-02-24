@@ -7,6 +7,5 @@
   "requirements": [],
   "dependencies": [],
   "config_flow": true,
-  "scan_interval": 5,
   "codeowners": ["@KrX3D"]
 }
