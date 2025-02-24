@@ -13,7 +13,7 @@ import re
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
-    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
+    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -266,7 +266,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-            selected_smd = user_input.get(CONF_SMART_METER_DEVICE, [])
+            selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                     
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # Coerce empty string to TRANSLATION_NONE
@@ -288,7 +288,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITY_TYPE: self.selected_type,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
+                    CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL
                 }
             )
 
@@ -319,7 +320,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Define the second GUI form for entity and room selection
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.All(vol.Coerce(lambda x: x if x != "" else TRANSLATION_NONE), vol.In(sorted_options)),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
@@ -361,8 +362,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         TRANSLATION_NONE = await get_translated_none(self.hass)
         
         old_room = self.config_entry.data.get(CONF_ROOM, "")
-        old_entities_smd = self.config_entry.data.get(CONF_SMART_METER_DEVICE, [])
-        old_entities = self.config_entry.data.get(CONF_ENTITIES, [])
+        old_entities_smd = self.config_entry.data.get(CONF_SMART_METER_DEVICE, "")
+        old_entities = set(self.config_entry.data.get(CONF_ENTITIES, []))
         old_integration_rooms = self.config_entry.data.get(CONF_INTEGRATION_ROOMS, [])
         current_room = self.config_entry.data.get(CONF_ROOM, "")
 
@@ -377,11 +378,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, [])
+                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                         
                 # Check if the user has deselected the smart meter device
-                if selected_smd == "":
-                   selected_smd = TRANSLATION_NONE  # Set to "None" if deselected
+                selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
 
                 # Use the old config entry's data to get the entity type
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
@@ -390,17 +390,18 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
-                # Save the entry
+                # Get translated entity type for title
+                translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
+                
                 self.options.update({
                     CONF_ROOM: user_input[CONF_ROOM],
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
+                    CONF_UPDATE_INTERVAL: user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
                 })
-                await self.async_create_new_config(self.options)
+                await self.async_create_new_config(self.options, translated_entity_type)
 
-                translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
-                
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
                     data=self.options
@@ -446,8 +447,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         # Sanitize the room name by replacing spaces with underscores        
         #_LOGGER.debug(f"room name: {current_room}")
         normalized_name = unicodedata.normalize('NFKD', current_room).encode('ascii', 'ignore').decode('utf-8')
-        sanitized_room_name = normalized_name.replace(" ", "_")
-        sanitized_room_name = sanitized_room_name.replace("-", "_")
+        sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_")
         #_LOGGER.debug(f"Sanitized room name: {sanitized_room_name}")
         
         # Construct the base entity ID without suffix
@@ -542,9 +542,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.In(sorted_options),
-            vol.Optional(CONF_ENTITIES, default=filtered_old_entities): vol.All(cv.multi_select(combined_entities)),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
+            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.All(vol.Coerce(lambda x: x if x != "" else TRANSLATION_NONE), vol.In(sorted_options)),
+            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms)),
+            vol.Optional(CONF_UPDATE_INTERVAL, default=self.config_entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)): vol.Coerce(int)
         })
 
         return self.async_show_form(
@@ -562,10 +563,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     sensor_data = self.hass.data[f'{DOMAIN}_config'][entry.entry_id]
                     sensors = sensor_data.get('sensors', [])
                     for sensor in sensors:
-                        if isinstance(sensor, EnergyandPowerMonitorSensor):
+                        if hasattr(sensor, "async_remove_sensor_entities"):
                             await sensor.async_remove_sensor_entities(old_room)
 
-    async def async_create_new_config(self, user_input):
+    async def async_create_new_config(self, user_input, translated_entity_type):
         """Create the new configuration."""
         room_name = user_input[CONF_ROOM]
         smart_meter_device = user_input.get(CONF_SMART_METER_DEVICE)  # Get the smart meter device from the user input
@@ -575,13 +576,14 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
    
         self.hass.config_entries.async_update_entry(
             self.config_entry,
-            title=room_name,
+            title=f"{translated_entity_type} - {room_name}",
             data={
                 CONF_ROOM: room_name,
                 CONF_SMART_METER_DEVICE: smart_meter_device,
                 CONF_ENTITIES: entities,
                 CONF_ENTITY_TYPE: user_input[CONF_ENTITY_TYPE],
-                CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, [])
+                CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, []),
+                CONF_UPDATE_INTERVAL: user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
             }
         )
         
