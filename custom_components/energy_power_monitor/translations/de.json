@@ -16,6 +16,7 @@
             "select_entities": {
                 "data": {
 					"smart_monitor_device": "Smart Monitor Gerät",
+          "smart_meter_device": "Smart Monitor Gerät2",
 					"entities": "Entitäten",
 					"integration_rooms": "Angelegte Räume",
                     "none": "Keine"
@@ -33,6 +34,7 @@
                 "data": {
 					"room": "Raum",
 					"smart_monitor_device": "Smart Monitor Gerät",
+          "smart_meter_device": "Smart Monitor Gerät2",
 					"entities": "Entitäten",
 					"integration_rooms": "Angelegte Räume",
                     "none": "Keine",
