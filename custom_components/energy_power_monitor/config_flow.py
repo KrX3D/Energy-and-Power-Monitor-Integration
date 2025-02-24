@@ -197,13 +197,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         TRANSLATION_NONE = await get_translated_none(self.hass)
         
-        # Define coerce_none outside the if block so it is used both below and in the schema
-        def coerce_none(value):
-            if value == "":
-                return TRANSLATION_NONE
-            return value
-        
-        # Get the entity registry (commented out alternative)
+        # Get the entity registry
         #entity_registry = er.async_get(self.hass)
         #all_entities = list(entity_registry.entities.keys())
         all_entities = self.hass.states.async_entity_ids('sensor')
@@ -241,7 +235,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # If the user clears the field (empty string), use the translated "None"
-            selected_smd = coerce_none(selected_smd)
+            selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
             # Get selected entities from the existing rooms
@@ -380,11 +374,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                         
                 # Check if the user has deselected the smart meter device
-                def coerce_none(value):
-                    if value == "":
-                        return TRANSLATION_NONE
-                    return value
-                selected_smd = coerce_none(selected_smd)
+                selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
 
                 # Use the old config entry's data to get the entity type
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
