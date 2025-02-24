@@ -256,7 +256,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry):
         """Initialize options flow."""
-        self.config_entry = config_entry
+        self._config_entry = config_entry
         self.options = dict(config_entry.data)
 
     async def update_all_references(self, old_room: str, new_room: str, current_entity_type: str):
