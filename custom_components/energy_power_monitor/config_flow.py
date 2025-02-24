@@ -13,7 +13,6 @@ import re
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
-    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
     CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
 )
 
@@ -616,4 +615,3 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         if self.hass.states.get(entity_id_cr):
             _LOGGER.info(f"Removing entity state: {entity_id_cr}")
             self.hass.states.async_remove(entity_id_cr)
-
