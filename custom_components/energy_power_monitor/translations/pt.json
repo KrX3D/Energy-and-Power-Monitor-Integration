@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "Dispositivo de Monitoramento Inteligente",
+                    "smart_meter_device": "Dispositivo de Monitoramento Inteligente",
                     "entities": "Entidades",
                     "integration_rooms": "Quartoss Criados",
                     "none": "Nenhum"
@@ -32,7 +32,7 @@
                 "description": "Mude o nome do quarto, o dispositivo de monitoramento inteligente ou os sensores",
                 "data": {
                     "room": "Quarto",
-                    "smart_monitor_device": "Dispositivo de Monitoramento Inteligente",
+                    "smart_meter_device": "Dispositivo de Monitoramento Inteligente",
                     "entities": "Entidades",
                     "integration_rooms": "Quartoss Criados",
                     "none": "Nenhum"
