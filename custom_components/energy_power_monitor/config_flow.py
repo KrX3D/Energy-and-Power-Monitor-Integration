@@ -107,8 +107,8 @@ async def get_translated_none(hass):
     # Log the full translations for debugging
     #_LOGGER.debug(f"Full translations fetched: {translations}")
     
-    # Fetch the translation for 'none'
-    translated_none = translations.get(none_translation_key, "None")
+    # For debugging, return the hardcoded string "Keine"
+    translated_none = "Keine"
     _LOGGER.debug(f"Translated 'None': {translated_none}")
     return translated_none
 
@@ -197,7 +197,13 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         TRANSLATION_NONE = await get_translated_none(self.hass)
         
-        # Get the entity registry
+        # Define coerce_none outside the if block so it is used both below and in the schema
+        def coerce_none(value):
+            if value == "":
+                return TRANSLATION_NONE
+            return value
+        
+        # Get the entity registry (commented out alternative)
         #entity_registry = er.async_get(self.hass)
         #all_entities = list(entity_registry.entities.keys())
         all_entities = self.hass.states.async_entity_ids('sensor')
@@ -235,7 +241,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # If the user clears the field (empty string), use the translated "None"
-            selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
+            selected_smd = coerce_none(selected_smd)
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
             # Get selected entities from the existing rooms
@@ -272,7 +278,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Define the second GUI form for entity and room selection
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.All(vol.Coerce(coerce_none), vol.In(sorted_options)),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
@@ -374,7 +380,11 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                         
                 # Check if the user has deselected the smart meter device
-                selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
+                def coerce_none(value):
+                    if value == "":
+                        return TRANSLATION_NONE
+                    return value
+                selected_smd = coerce_none(selected_smd)
 
                 # Use the old config entry's data to get the entity type
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
