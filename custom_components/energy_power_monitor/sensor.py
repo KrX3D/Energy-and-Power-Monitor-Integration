@@ -185,6 +185,10 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     async def async_update(self):
         """Update the sensor state by summing up the values from selected entities."""
         total_value = 0
+        # Update _entities in case some have been removed
+        valid_entities = check_and_remove_nonexistent_entities(self.hass, self._entities, None)
+        self._entities = valid_entities
+
         for entity_id in self._entities:
             entity = self.hass.states.get(entity_id)
             if entity and entity.state not in (None, 'unknown', 'unavailable'):
@@ -239,11 +243,13 @@ class SmartMeterSensor(SensorEntity):
         smart_meter_value = self.hass.states.get(self._smart_meter_device)
 
         if (energy_power_monitor_value is not None and smart_meter_value is not None and
-                energy_power_monitor_value != "unknown" and smart_meter_value.state != "unknown" and
-                energy_power_monitor_value != "unavailable" and smart_meter_value.state != "unavailable"):
-            # Calculate the difference and ensure it's not negative
-            value = float(smart_meter_value.state) - float(energy_power_monitor_value)
-            return max(0, round(value, 1))
+                energy_power_monitor_value not in ("unknown", "unavailable") and
+                smart_meter_value.state not in ("unknown", "unavailable")):
+            try:
+                value = float(smart_meter_value.state) - float(energy_power_monitor_value)
+                return max(0, round(value, 1))
+            except ValueError:
+                return None
         return None
 
     @property
