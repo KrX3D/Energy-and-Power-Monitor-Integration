@@ -234,7 +234,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
             _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # If the user clears the field (empty string), use the translated "none"
+            # If the user clears the field (empty string), use the translated "None"
             selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
@@ -365,7 +365,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
                     await self.update_all_references(old_room, user_input[CONF_ROOM], current_entity_type)
                 
-                # Remove old sensor entities
+                # Simulate pressing OK by updating and reloading the config entry after a short delay
                 await self.async_remove_old_config(old_room)
                 await self.async_remove_sensor_entities(old_room)
 
@@ -549,8 +549,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, [])
             }
         )
-        # Do not force a reload here to prevent update loops.
-        # The sensor platform should update on its own after the config entry changes.
+        await self.hass.config_entries.async_reload(self.config_entry.entry_id)
 
     async def async_remove_sensor_entities(self, room_name):
         """Remove all sensor entities associated with the old room name and log them."""
