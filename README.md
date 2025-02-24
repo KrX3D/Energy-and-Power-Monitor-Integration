@@ -46,12 +46,3 @@ Hello! This is my first integration and my first GitHub repository, so please be
 
 
 This way, you can monitor which device or room consumes how much energy or power.
-
----
-
-### Current Issues (Known Bugs)
-
-Here are some known problems that I am currently working on fixing, and some i currently don't know hot to solve:
-   
-1. **Sensor removed in Home Assistant:**
- - If a sensor was removed or renamed in Home Assistant, also remove it in this integration if it was selected, currently it is removed and the integration works but you need to manually open the room and hit ok to save it again or else a message will apways pop um in the logs
