@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "스마트 모니터 장치",
+                    "smart_meter_device": "스마트 모니터 장치",
                     "entities": "엔티티",
                     "integration_rooms": "생성된 방",
                     "none": "없음"
@@ -32,7 +32,7 @@
                 "description": "방 이름, 스마트 모니터 장치 또는 센서를 변경하세요",
                 "data": {
                     "room": "방",
-                    "smart_monitor_device": "스마트 모니터 장치",
+                    "smart_meter_device": "스마트 모니터 장치",
                     "entities": "엔티티",
                     "integration_rooms": "생성된 방",
                     "none": "없음"
