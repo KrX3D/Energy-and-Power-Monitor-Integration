@@ -107,7 +107,7 @@ async def get_translated_none(hass):
     # Log the full translations for debugging
     #_LOGGER.debug(f"Full translations fetched: {translations}")
     
-    # For debug, return "Keine" instead of the translated value
+    # For debugging, return the hardcoded string "Keine"
     translated_none = "Keine"
     _LOGGER.debug(f"Translated 'None': {translated_none}")
     return translated_none
@@ -130,7 +130,7 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
     _LOGGER.debug(f"Selected smart meter devices: {selected_smart_meter_devices}")
     return selected_smart_meter_devices
 
-#Get all Integration rooms that where already selected and assigned to a room
+# Get all Integration rooms that were already selected and assigned to a room
 def get_selected_integration_rooms(hass, existing_rooms):
     """Retrieve the selected smart meter devices from filtered entities."""
     _LOGGER.debug("get_selected_integration_rooms function start")
@@ -158,7 +158,7 @@ def get_selected_integration_rooms(hass, existing_rooms):
 
     # Sort the filtered entities by friendly name
     sorted_filtered_entities = dict(sorted(filtered_entities_with_friendly_name.items(), key=lambda item: item[1]))
-   # _LOGGER.debug(f"Sorted filtered entities with friendly names: {sorted_filtered_entities}")
+    #_LOGGER.debug(f"Sorted filtered entities with friendly names: {sorted_filtered_entities}")
     return sorted_filtered_entities  # Return the sorted dictionary
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -197,7 +197,13 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         TRANSLATION_NONE = await get_translated_none(self.hass)
         
-        # Get the entity registry
+        # Define coerce_none outside the if block so it is used both below and in the schema
+        def coerce_none(value):
+            if value == "":
+                return TRANSLATION_NONE
+            return value
+        
+        # Get the entity registry (commented out alternative)
         #entity_registry = er.async_get(self.hass)
         #all_entities = list(entity_registry.entities.keys())
         all_entities = self.hass.states.async_entity_ids('sensor')
@@ -235,11 +241,6 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # If the user clears the field (empty string), use the debug string "Keine"
-            # Using a helper function to coerce empty strings
-            def coerce_none(value):
-                if value == "":
-                    return TRANSLATION_NONE
-                return value
             selected_smd = coerce_none(selected_smd)
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
@@ -309,10 +310,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         """
         sanitized_old = old_room.lower().replace(" ", "_")
         sanitized_new = new_room.lower().replace(" ", "_")
-        # Compute old and new main sensor entity IDs
         old_main_id = f"sensor.{DOMAIN}_{sanitized_old}_{current_entity_type}"
         new_main_id = f"sensor.{DOMAIN}_{sanitized_new}_{current_entity_type}"
-        # For smart meter sensors, update any ID starting with the old prefix
         old_smart_prefix = f"sensor.{DOMAIN}_{sanitized_old}_untracked_"
         new_smart_prefix = f"sensor.{DOMAIN}_{sanitized_new}_untracked_"
 
