@@ -9,6 +9,7 @@ from homeassistant.helpers import selector
 import unicodedata
 from homeassistant.helpers.translation import async_get_translations
 import re
+import asyncio
 
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
@@ -233,7 +234,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
             selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
             _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # If the user clears the field (empty string), use the translated "None"
+            # If the user clears the field (empty string), use the translated "none"
             selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             _LOGGER.info(f"selected_smd after: {selected_smd}")
         
@@ -314,6 +315,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 continue
             data = dict(entry.data)
             updated = False
+            # Update integration_rooms list
             if CONF_INTEGRATION_ROOMS in data:
                 new_rooms = []
                 for room in data[CONF_INTEGRATION_ROOMS]:
@@ -323,6 +325,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     else:
                         new_rooms.append(room)
                 data[CONF_INTEGRATION_ROOMS] = new_rooms
+            # Update entities list
             if CONF_ENTITIES in data:
                 new_entities = []
                 for ent in data[CONF_ENTITIES]:
@@ -357,10 +360,12 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         integration_entities = await get_integration_entities(self.hass)
         if user_input is not None:
             try:
+                # If the room name has changed, update references in all other config entries
                 if user_input[CONF_ROOM] != old_room:
                     current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
                     await self.update_all_references(old_room, user_input[CONF_ROOM], current_entity_type)
-
+                
+                # Simulate pressing OK by updating and reloading the config entry after a short delay
                 await self.async_remove_old_config(old_room)
                 await self.async_remove_sensor_entities(old_room)
 
@@ -388,6 +393,9 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options, translated_entity_type)
+                # Wait a short moment and then reload the config entry to simulate the final OK press
+                await asyncio.sleep(1)
+                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
                     data=self.options
