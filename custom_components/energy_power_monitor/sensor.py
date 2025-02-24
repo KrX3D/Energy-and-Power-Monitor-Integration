@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.event import async_track_time_interval
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -75,11 +75,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         # Start the periodic reloader
         async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
 
-    # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
     else:
-        # Otherwise, listen for the start event
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, start_periodic_reload)
 
@@ -92,7 +90,8 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
             #_LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
             valid_entities.append(entity_id)  # Keep the entity if it exists
         else:
-            _LOGGER.warning(f"Entity {entity_id} no longer exists. Please remove it by clicking Config on the room and then OK.")
+            # Instead of just warning the user, automatically remove the missing entity.
+            _LOGGER.info(f"Entity {entity_id} no longer exists and is being removed automatically.")
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
     return valid_entities
 
@@ -174,7 +173,6 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 
     async def async_update(self):
         """Re-read the configuration on each update and update state."""
-        # Re-read the config entry data
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
             new_entities = entry.data.get(CONF_ENTITIES, [])
@@ -182,7 +180,6 @@ class EnergyandPowerMonitorSensor(SensorEntity):
                 _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
                 self._entities = new_entities
         total_value = 0
-        # Update _entities in case some have been removed
         valid_entities = check_and_remove_nonexistent_entities(self.hass, self._entities, None)
         self._entities = valid_entities
         for entity_id in self._entities:
@@ -191,17 +188,26 @@ class EnergyandPowerMonitorSensor(SensorEntity):
                 try:
                     entity_value = float(entity.state)
                     total_value += entity_value
-                    #_LOGGER.debug(f"Entity {entity_id} has power value {power_value}")
                 except ValueError:
-                    #_LOGGER.warning(f"Entity {entity_id} has a non-numeric state: {entity.state}")
-                    pass #Remove when uncommenting the logger part
-            #else:
-                #_LOGGER.debug(f"Entity {entity_id} is unavailable or has an unknown state.")
-
-        # Limit the decimals to 1 and ensure the value is not negative
+                    pass
         self._state = max(0, round(total_value, 1))
-
         #_LOGGER.info(f"Updated EnergyandPowerMonitorSensor {self.entity_id} state to {self._state} {self.unit_of_measurement}")
+
+    async def async_added_to_hass(self):
+        """Register update listener when the sensor is added."""
+        self.async_on_remove(
+            self.hass.config_entries.async_add_update_listener(self._update_listener)
+        )
+        await super().async_added_to_hass()
+
+    async def _update_listener(self, hass, entry):
+        """Update listener: re-read configuration and force an immediate state update."""
+        new_entities = entry.data.get(CONF_ENTITIES, [])
+        if new_entities != self._entities:
+            _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
+            self._entities = new_entities
+        await self.async_update()
+        self.async_write_ha_state()
 
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor."""
@@ -216,8 +222,6 @@ class SmartMeterSensor(SensorEntity):
         self._entry_id = entry_id
         self._unique_id = self.generate_unique_id()
         self._energy_power_monitor_sensor = energy_power_monitor_sensor
-
-        # Generate the entity ID for this sensor
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
         _LOGGER.debug(f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, smart_meter_device: {self._smart_meter_device}")
 
@@ -249,12 +253,11 @@ class SmartMeterSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID of the Smart Meter sensor."""
-        # Generate a unique ID using the room name and the sanitized smart meter device name
-        sanitized_device_name = self._smart_meter_device.split('.')[-1]  # Get the name part after the last dot
+        sanitized_device_name = self._smart_meter_device.split('.')[-1]
         if sanitized_device_name.endswith('_power'):
-            sanitized_device_name = sanitized_device_name[:-6]  # Remove _power
+            sanitized_device_name = sanitized_device_name[:-6]
         elif sanitized_device_name.endswith('_energy'):
-            sanitized_device_name = sanitized_device_name[:-7]  # Remove _energy
+            sanitized_device_name = sanitized_device_name[:-7]
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
         return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
 
@@ -273,7 +276,7 @@ class SmartMeterSensor(SensorEntity):
         """Return additional attributes of the sensor."""
         return {
             "Selected Smart Meter Device": self._smart_meter_device,
-            "Energy and Power Monitor": self._energy_power_monitor_sensor.entity_id  # Add the entity ID from EnergyandPowerMonitorSensor
+            "Energy and Power Monitor": self._energy_power_monitor_sensor.entity_id
         }
 
     @property
@@ -317,10 +320,4 @@ class SmartMeterSensor(SensorEntity):
         await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
-        """Update listener: re-read configuration and force an immediate state update."""
-        new_entities = entry.data.get(CONF_ENTITIES, [])
-        if new_entities != self._entities:
-            _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
-            self._entities = new_entities
-        # Force an immediate update instead of waiting for the next poll.
-        await self.async_update()
+        self.async_write_ha_state()
