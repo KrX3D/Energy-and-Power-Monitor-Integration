@@ -10,6 +10,7 @@ import unicodedata
 from homeassistant.helpers.translation import async_get_translations
 import re
 
+
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
