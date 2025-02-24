@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "Akıllı İzleme Cihazı",
+                    "smart_meter_device": "Akıllı İzleme Cihazı",
                     "entities": "Varlıklar",
                     "integration_rooms": "Oluşturulan Odalar",
                     "none": "Hiçbiri"
@@ -32,7 +32,7 @@
                 "description": "Oda adını, akıllı izleme cihazını veya sensörleri değiştirin",
                 "data": {
                     "room": "Oda",
-                    "smart_monitor_device": "Akıllı İzleme Cihazı",
+                    "smart_meter_device": "Akıllı İzleme Cihazı",
                     "entities": "Varlıklar",
                     "integration_rooms": "Oluşturulan Odalar",
                     "none": "Hiçbiri"
