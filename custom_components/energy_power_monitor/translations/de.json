@@ -7,19 +7,18 @@
         "step": {
             "user": {
                 "data": {
-					"room": "Raumname",
-					"entity_type": "Entitätstyp Filter"
+	                "room": "Raumname",
+	                "entity_type": "Entitätstyp Filter"
                 },
                 "title": "Raumkonfiguration",
                 "description": "Wählen Sie den Raum und den Typ aus"
             },
             "select_entities": {
                 "data": {
-					"smart_monitor_device": "Smart Monitor Gerät",
-          "smart_meter_device": "Smart Monitor Gerät2",
-					"entities": "Entitäten",
-					"integration_rooms": "Angelegte Räume",
-                    "none": "Keine"
+	                "smart_meter_device": "Smart Monitor Gerät",
+	                "entities": "Entitäten",
+	                "integration_rooms": "Angelegte Räume",
+	                "none": "Keine"
                 },
                 "title": "Raumkonfiguration",
                 "description": "Wählen Sie ein Smart Monitor Gerät aus und alle Sensoren die daran angeschlossen sind"
@@ -32,20 +31,20 @@
                 "title": "Raum neu konfigurieren",
                 "description": "Ändern Sie den Raumnamen, Smart Monitor Gerät oder die Sensoren",
                 "data": {
-					"room": "Raum",
-					"smart_monitor_device": "Smart Monitor Gerät",
-          "smart_meter_device": "Smart Monitor Gerät2",
-					"entities": "Entitäten",
-					"integration_rooms": "Angelegte Räume",
-                    "none": "Keine",
-                    "update_interval": "Update Interval (Sekunden)"
+			"room": "Raum",
+			"smart_monitor_device": "Smart Monitor Gerät",
+          		"smart_meter_device": "Smart Monitor Gerät2",
+			"entities": "Entitäten",
+			"integration_rooms": "Angelegte Räume",
+			"none": "Keine",
+			"update_interval": "Update Interval (Sekunden)"
                 }
             },
             "select_entities": {
                 "data": {
                     "none": "Keine"
-				}
 			}
+		}
         }
     },
     "selector": {
