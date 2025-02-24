@@ -247,4 +247,11 @@ class SmartMeterSensor(SensorEntity):
         await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
+        """Update listener: re-read configuration and force an immediate state update."""
+        new_entities = entry.data.get(CONF_ENTITIES, [])
+        if new_entities != self._entities:
+            _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
+            self._entities = new_entities
+        # Force an immediate update instead of waiting for the next poll.
+        await self.async_update()
         self.async_write_ha_state()
