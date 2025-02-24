@@ -13,7 +13,7 @@ import re
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
-    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
+    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -288,8 +288,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITY_TYPE: self.selected_type,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
-                    CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 }
             )
 
@@ -320,7 +319,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Define the second GUI form for entity and room selection
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.All(vol.Coerce(lambda x: x if x != "" else TRANSLATION_NONE), vol.In(sorted_options)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
@@ -397,8 +396,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_ROOM: user_input[CONF_ROOM],
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
-                    CONF_UPDATE_INTERVAL: user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options, translated_entity_type)
 
@@ -542,10 +540,9 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.All(vol.Coerce(lambda x: x if x != "" else TRANSLATION_NONE), vol.In(sorted_options)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.In(sorted_options),
             vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms)),
-            vol.Optional(CONF_UPDATE_INTERVAL, default=self.config_entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)): vol.Coerce(int)
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
 
         return self.async_show_form(
@@ -582,8 +579,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_SMART_METER_DEVICE: smart_meter_device,
                 CONF_ENTITIES: entities,
                 CONF_ENTITY_TYPE: user_input[CONF_ENTITY_TYPE],
-                CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, []),
-                CONF_UPDATE_INTERVAL: user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, [])
             }
         )
         
