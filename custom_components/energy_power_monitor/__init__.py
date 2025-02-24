@@ -22,7 +22,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Set up the sensor platform
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
     return True
-    
+
 # Handle unloading of the config entry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Handle unloading of an entry."""
@@ -31,7 +31,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     _LOGGER.debug(f"Unloading Energy and Power Monitor for entry_id: {entry.title}")
 
-    # Unload the sensor platform (fix: pass string, not list)
+    # Unload the sensor platform (pass string, not list)
     await hass.config_entries.async_forward_entry_unload(entry, "sensor")
     return True
 
