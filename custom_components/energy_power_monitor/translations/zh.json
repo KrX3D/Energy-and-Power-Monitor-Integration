@@ -15,7 +15,7 @@
             },
             "select_entities": {
                 "data": {
-                    "smart_monitor_device": "智能监控设备",
+                    "smart_meter_device": "智能监控设备",
                     "entities": "实体",
                     "integration_rooms": "创建的房间",
                     "none": "无"
@@ -32,7 +32,7 @@
                 "description": "更改房间名称、智能监控设备或传感器",
                 "data": {
                     "room": "房间",
-                    "smart_monitor_device": "智能监控设备",
+                    "smart_meter_device": "智能监控设备",
                     "entities": "实体",
                     "integration_rooms": "创建的房间",
                     "none": "无"
