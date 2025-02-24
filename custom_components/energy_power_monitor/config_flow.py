@@ -289,8 +289,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITY_TYPE: self.selected_type,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
-                    CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 }
             )
 
