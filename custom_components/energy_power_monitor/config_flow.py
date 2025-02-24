@@ -10,11 +10,10 @@ import unicodedata
 from homeassistant.helpers.translation import async_get_translations
 import re
 
-
 from .const import (
     DOMAIN, CONF_ROOM, CONF_ENTITIES, CONF_ENTITY_TYPE,
     ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY,
-    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
+    CONF_INTEGRATION_ROOMS, CONF_SMART_METER_DEVICE
 )
 
 _LOGGER = logging.getLogger(__name__)
