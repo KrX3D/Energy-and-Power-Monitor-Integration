@@ -62,10 +62,3 @@ Here are some known problems that I am currently working on fixing, and some i c
    
 3. **Sensor removed in Home Assistant:**
  - If a sensor was removed or renamed in Home Assistant, also remove it in this integration if it was selected, currently it is removed and the integration works but you need to manually open the room and hit ok to save it again or else a message will apways pop um in the logs
-
----
-
-### Upcoming Features
-
-I'm also working on a custom card for this integration. I'll post the link here once it's ready.
-
