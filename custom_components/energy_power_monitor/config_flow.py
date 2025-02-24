@@ -289,7 +289,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITY_TYPE: self.selected_type,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
+                    CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL
                 }
             )
 
@@ -397,7 +398,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_ROOM: user_input[CONF_ROOM],
                     CONF_SMART_METER_DEVICE: selected_smd,
                     CONF_ENTITIES: selected_entities,
-                    CONF_INTEGRATION_ROOMS: selected_existing_rooms
+                    CONF_INTEGRATION_ROOMS: selected_existing_rooms,
+                    CONF_UPDATE_INTERVAL: user_input.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
                 })
                 await self.async_create_new_config(self.options, translated_entity_type)
 
