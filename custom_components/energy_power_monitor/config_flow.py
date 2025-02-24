@@ -365,7 +365,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)
                     await self.update_all_references(old_room, user_input[CONF_ROOM], current_entity_type)
                 
-                # Simulate pressing OK by updating and reloading the config entry after a short delay
+                # Remove old sensor entities
                 await self.async_remove_old_config(old_room)
                 await self.async_remove_sensor_entities(old_room)
 
@@ -393,9 +393,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_INTEGRATION_ROOMS: selected_existing_rooms
                 })
                 await self.async_create_new_config(self.options, translated_entity_type)
-                # Wait a short moment and then reload the config entry to simulate the final OK press
-                await asyncio.sleep(1)
-                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                # Instead of forcing a reload that may trigger a loop, simply return the updated entry.
                 return self.async_create_entry(
                     title=f"{translated_entity_type} - {self.options[CONF_ROOM]}",
                     data=self.options
@@ -551,7 +549,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, [])
             }
         )
-        await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+        # Do not force a reload here to prevent update loops.
+        # The sensor platform should update on its own after the config entry changes.
 
     async def async_remove_sensor_entities(self, room_name):
         """Remove all sensor entities associated with the old room name and log them."""
