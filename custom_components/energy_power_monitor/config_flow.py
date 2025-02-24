@@ -107,8 +107,8 @@ async def get_translated_none(hass):
     # Log the full translations for debugging
     #_LOGGER.debug(f"Full translations fetched: {translations}")
     
-    # For debugging, return the hardcoded string "Keine"
-    translated_none = "Keine"
+    # Fetch the translation for 'none'
+    translated_none = translations.get(none_translation_key, "None")
     _LOGGER.debug(f"Translated 'None': {translated_none}")
     return translated_none
 
