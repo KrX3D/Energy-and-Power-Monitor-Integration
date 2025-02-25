@@ -221,6 +221,13 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     async def _update_listener(self, hass, entry):
         if self._removed:
             return
+        from datetime import datetime, timedelta  # ensure these are imported
+        now = datetime.now()
+        # Throttle updates: if the last update was less than 2 seconds ago, skip this one.
+        if hasattr(self, "_last_update") and (now - self._last_update) < timedelta(seconds=2):
+            return
+        self._last_update = now
+
         new_entities = entry.data.get(CONF_ENTITIES, [])
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
@@ -357,6 +364,11 @@ class SmartMeterSensor(SensorEntity):
     async def _update_listener(self, hass, entry):
         if self._removed:
             return
+        from datetime import datetime, timedelta  # ensure these are imported
+        now = datetime.now()
+        if hasattr(self, "_last_update") and (now - self._last_update) < timedelta(seconds=2):
+            return
+        self._last_update = now
         self.async_write_ha_state()
         
     async def async_remove_sensor_entities(self, room_name):
