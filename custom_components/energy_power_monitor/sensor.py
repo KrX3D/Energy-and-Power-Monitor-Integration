@@ -75,11 +75,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         # Start the periodic reloader
         async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
 
-    # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
     else:
-        # Otherwise, listen for the start event
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, start_periodic_reload)
 
@@ -223,15 +221,19 @@ class SmartMeterSensor(SensorEntity):
         self._entry_id = entry_id
         self._unique_id = self.generate_unique_id()
         self._energy_power_monitor_sensor = energy_power_monitor_sensor
-
-        # Generate the entity ID for this sensor
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
         _LOGGER.debug(f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, smart_meter_device: {self._smart_meter_device}")
 
     def generate_unique_id(self):
-        """Generate a unique ID for the Smart Meter sensor."""
+        """Generate a unique ID for the Smart Meter sensor using the smart meter device name."""
+        # Use the smart meter device's name part to differentiate between power and energy sensors.
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"{DOMAIN}_{sanitized_room_name}_untracked_{self._entity_type}"
+        sanitized_device_name = self._smart_meter_device.split('.')[-1]
+        if sanitized_device_name.endswith('_power'):
+            sanitized_device_name = sanitized_device_name[:-6]
+        elif sanitized_device_name.endswith('_energy'):
+            sanitized_device_name = sanitized_device_name[:-7]
+        return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
 
     @property
     def name(self):
@@ -256,13 +258,7 @@ class SmartMeterSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID of the Smart Meter sensor."""
-        sanitized_device_name = self._smart_meter_device.split('.')[-1]
-        if sanitized_device_name.endswith('_power'):
-            sanitized_device_name = sanitized_device_name[:-6]
-        elif sanitized_device_name.endswith('_energy'):
-            sanitized_device_name = sanitized_device_name[:-7]
-        sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
+        return self._unique_id
 
     @property
     def device_info(self) -> DeviceInfo:
