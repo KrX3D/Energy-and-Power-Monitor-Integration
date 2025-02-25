@@ -203,15 +203,16 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
-        """Update listener: re-read configuration and force an immediate state update."""
-        if self._removed:
-            return  # Stop updates if the sensor is removed
-
+        # Check if the config entry still exists; if not, stop processing.
+        if not self.hass.config_entries.async_get_entry(self._entry_id):
+            _LOGGER.debug(f"Config entry for {self.entity_id} no longer exists; stopping update listener.")
+            return
         new_entities = entry.data.get(CONF_ENTITIES, [])
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
-        await self.async_update()
+        # Instead of calling async_update() (which may trigger another update loop),
+        # simply write the current state.
         self.async_write_ha_state()
         
     async def async_remove_sensor_entities(self, room_name):
@@ -335,8 +336,9 @@ class SmartMeterSensor(SensorEntity):
         await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
-        if self._removed:
-            return  # Stop updates if the sensor is removed
+        if not self.hass.config_entries.async_get_entry(self._entry_id):
+            _LOGGER.debug(f"Config entry for {self.entity_id} no longer exists; stopping update listener.")
+            return
         self.async_write_ha_state()
         
     async def async_remove_sensor_entities(self, room_name):
