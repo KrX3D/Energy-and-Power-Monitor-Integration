@@ -202,25 +202,29 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         self._state = max(0, round(total_value, 1))
         self.async_write_ha_state()
 
-
     async def async_added_to_hass(self):
         """Register update listener when the sensor is added."""
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
-            self.async_on_remove(entry.add_update_listener(self._update_listener))
+            # Store the removal callback so we can later unregister the listener.
+            self._remove_update_listener = entry.add_update_listener(self._update_listener)
+            self.async_on_remove(self._remove_update_listener)
         await super().async_added_to_hass()
 
+    async def async_remove(self):
+        """Override removal to unregister update listener and mark removal."""
+        self._removed = True
+        if hasattr(self, "_remove_update_listener") and callable(self._remove_update_listener):
+            self._remove_update_listener()  # Unregister the update listener
+        await super().async_remove()
+
     async def _update_listener(self, hass, entry):
-        # Check if the config entry still exists; if not, stop processing.
-        if not self.hass.config_entries.async_get_entry(self._entry_id):
-            _LOGGER.debug(f"Config entry for {self.entity_id} no longer exists; stopping update listener.")
+        if self._removed:
             return
         new_entities = entry.data.get(CONF_ENTITIES, [])
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
-        # Instead of calling async_update() (which may trigger another update loop),
-        # simply write the current state.
         self.async_write_ha_state()
         
     async def async_remove_sensor_entities(self, room_name):
@@ -340,12 +344,18 @@ class SmartMeterSensor(SensorEntity):
     async def async_added_to_hass(self):
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
-            self.async_on_remove(entry.add_update_listener(self._update_listener))
+            self._remove_update_listener = entry.add_update_listener(self._update_listener)
+            self.async_on_remove(self._remove_update_listener)
         await super().async_added_to_hass()
 
+    async def async_remove(self):
+        self._removed = True
+        if hasattr(self, "_remove_update_listener") and callable(self._remove_update_listener):
+            self._remove_update_listener()
+        await super().async_remove()
+
     async def _update_listener(self, hass, entry):
-        if not self.hass.config_entries.async_get_entry(self._entry_id):
-            _LOGGER.debug(f"Config entry for {self.entity_id} no longer exists; stopping update listener.")
+        if self._removed:
             return
         self.async_write_ha_state()
         
