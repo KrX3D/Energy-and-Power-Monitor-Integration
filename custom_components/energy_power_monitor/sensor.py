@@ -109,6 +109,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         self._entity_type = entity_type  # Power or Energy type
         self._unique_id = self.generate_unique_id()
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        self._removed = False  # <--- new flag to mark removal
         _LOGGER.debug(f"EnergyandPowerMonitorSensor initialized: {self.entity_id} for room: {self._room_name}, entity_type: {self._entity_type}")
 
     def generate_unique_id(self):
@@ -203,18 +204,22 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 
     async def _update_listener(self, hass, entry):
         """Update listener: re-read configuration and force an immediate state update."""
+        if self._removed:
+            return  # Stop updates if the sensor is removed
+
         new_entities = entry.data.get(CONF_ENTITIES, [])
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
         await self.async_update()
         self.async_write_ha_state()
+        
     async def async_remove_sensor_entities(self, room_name):
         """Remove this sensor if its room name matches the given room."""
         if room_name == self._room_name:
             _LOGGER.info(f"Removing sensor {self.entity_id} for room: {room_name}")
+            self._removed = True
             await self.async_remove()
-
 
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor."""
@@ -232,6 +237,7 @@ class SmartMeterSensor(SensorEntity):
 
         # Generate the entity ID for this sensor
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        self._removed = False  # <--- new flag
         _LOGGER.debug(f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, smart_meter_device: {self._smart_meter_device}")
 
     def generate_unique_id(self):
@@ -329,10 +335,13 @@ class SmartMeterSensor(SensorEntity):
         await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
+        if self._removed:
+            return  # Stop updates if the sensor is removed
         self.async_write_ha_state()
         
     async def async_remove_sensor_entities(self, room_name):
         """Remove this sensor if its room name matches the given room."""
         if room_name == self._room_name:
             _LOGGER.info(f"Removing sensor {self.entity_id} for room: {room_name}")
+            self._removed = True
             await self.async_remove()
