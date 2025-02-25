@@ -228,7 +228,7 @@ class SmartMeterSensor(SensorEntity):
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
         sanitized_device_name = self._smart_meter_device.split('.')[-1]
         # Do not remove the suffix; include the entity type explicitly to ensure uniqueness.
-        return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}_{self._entity_type}"
+        return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
 
     @property
     def name(self):
