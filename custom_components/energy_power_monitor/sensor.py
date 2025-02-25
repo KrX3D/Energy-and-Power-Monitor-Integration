@@ -225,9 +225,12 @@ class SmartMeterSensor(SensorEntity):
         _LOGGER.debug(f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, smart_meter_device: {self._smart_meter_device}")
 
     def generate_unique_id(self):
-        sanitized_room_name = self._room_name.lower().replace(' ', '_')
         sanitized_device_name = self._smart_meter_device.split('.')[-1]
-        # Do not remove the suffix; include the entity type explicitly to ensure uniqueness.
+        if sanitized_device_name.endswith('_power'):
+            sanitized_device_name = sanitized_device_name[:-6]
+        elif sanitized_device_name.endswith('_energy'):
+            sanitized_device_name = sanitized_device_name[:-7]
+        sanitized_room_name = self._room_name.lower().replace(' ', '_')
         return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
 
     @property
