@@ -32,16 +32,21 @@ def get_filtered_entities_for_room(hass, room_id):
     _LOGGER.debug(f"get_filtered_entities_for_room returns: {filtered_entities}")
     return filtered_entities
 
-async def get_integration_entities(hass):
-    """Retrieve all sensor entities created by this integration with their friendly names."""
+async def get_integration_entities(hass, entity_type=None):
+    """Retrieve all sensor entities created by this integration with their friendly names.
+    
+    If entity_type is provided (e.g. 'power' or 'energy'), only return integration entities
+    whose unique_id ends with f"_{entity_type}".
+    """
     _LOGGER.debug("get_integration_entities function start")
     entity_registry = er.async_get(hass)
     integration_entities = {}
     for entity_id, entity in entity_registry.entities.items():
         if entity.unique_id.startswith(DOMAIN):
+            if entity_type and not entity.unique_id.endswith(f"_{entity_type}"):
+                continue
             state = hass.states.get(entity_id)
             if state and 'friendly_name' in state.attributes:
-                # Get friendly_name (the UI may remove suffixes as needed)
                 friendly_name = state.attributes['friendly_name']
                 integration_entities[entity_id] = friendly_name
     _LOGGER.debug(f"get_integration_entities returns: {integration_entities}")
@@ -197,7 +202,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices
         ])
         _LOGGER.debug(f"Filtered entities after: {filtered_entities}")
-        integration_entities = await get_integration_entities(self.hass)
+        integration_entities = await get_integration_entities(self.hass, self.selected_type)
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
@@ -333,7 +338,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         current_room = self.config_entry.data.get(CONF_ROOM, "")
 
         # Use get_integration_entities for existing rooms
-        integration_entities = await get_integration_entities(self.hass)
+        integration_entities = await get_integration_entities(self.hass, self._config_entry.data.get(CONF_ENTITY_TYPE))
         if user_input is not None:
             try:
                 # If the room name has changed, update references in all other config entries
