@@ -40,16 +40,12 @@ def get_filtered_entities_for_room(hass, room_id, entity_type=None):
     return filtered_entities
 
 async def get_integration_entities(hass, entity_type=None):
-    """Retrieve all sensor entities created by this integration with their friendly names.
-    
-    If entity_type is provided (e.g. 'power' or 'energy'), only return integration entities
-    whose unique_id ends with f"_{entity_type}" or f"_untracked_{entity_type}".
-    """
     _LOGGER.debug("get_integration_entities function start")
     entity_registry = er.async_get(hass)
     integration_entities = {}
     for entity_id, entity in entity_registry.entities.items():
         if entity.unique_id.startswith(DOMAIN):
+            # Only include entities that match the desired type
             if entity_type and not (entity.unique_id.endswith(f"_{entity_type}") or 
                                      entity.unique_id.endswith(f"_untracked_{entity_type}")):
                 continue
