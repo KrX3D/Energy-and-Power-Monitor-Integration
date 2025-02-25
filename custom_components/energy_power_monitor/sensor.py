@@ -174,26 +174,34 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             return SensorDeviceClass.ENERGY
 
     async def async_update(self):
-        """Re-read the configuration on each update and update state."""
+        if self._removed:
+            return
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
             new_entities = entry.data.get(CONF_ENTITIES, [])
             if new_entities != self._entities:
                 _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
                 self._entities = new_entities
-        total_value = 0
         valid_entities = check_and_remove_nonexistent_entities(self.hass, self._entities, None)
+        if valid_entities != self._entities:
+            _LOGGER.info(f"Sensor {self.entity_id}: updating entities from {self._entities} to {valid_entities}")
         self._entities = valid_entities
+        # NEW: Only write state if the list of entities has changed since the last update
+        if hasattr(self, "_prev_entities") and self._prev_entities == self._entities:
+            return
+        self._prev_entities = self._entities
+
+        total_value = 0
         for entity_id in self._entities:
             entity = self.hass.states.get(entity_id)
             if entity and entity.state not in (None, 'unknown', 'unavailable'):
                 try:
-                    entity_value = float(entity.state)
-                    total_value += entity_value
+                    total_value += float(entity.state)
                 except ValueError:
                     pass
         self._state = max(0, round(total_value, 1))
-        #_LOGGER.info(f"Updated EnergyandPowerMonitorSensor {self.entity_id} state to {self._state} {self.unit_of_measurement}")
+        self.async_write_ha_state()
+
 
     async def async_added_to_hass(self):
         """Register update listener when the sensor is added."""
