@@ -209,6 +209,12 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             self._entities = new_entities
         await self.async_update()
         self.async_write_ha_state()
+    async def async_remove_sensor_entities(self, room_name):
+        """Remove this sensor if its room name matches the given room."""
+        if room_name == self._room_name:
+            _LOGGER.info(f"Removing sensor {self.entity_id} for room: {room_name}")
+            await self.async_remove()
+
 
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor."""
@@ -324,3 +330,9 @@ class SmartMeterSensor(SensorEntity):
 
     async def _update_listener(self, hass, entry):
         self.async_write_ha_state()
+        
+    async def async_remove_sensor_entities(self, room_name):
+        """Remove this sensor if its room name matches the given room."""
+        if room_name == self._room_name:
+            _LOGGER.info(f"Removing sensor {self.entity_id} for room: {room_name}")
+            await self.async_remove()
