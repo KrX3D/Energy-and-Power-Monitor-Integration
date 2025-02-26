@@ -443,7 +443,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         smart_meter_device = user_input.get(CONF_SMART_METER_DEVICE)
         entities = user_input[CONF_ENTITIES]
         self.hass.config_entries.async_update_entry(
-            self.config_entry,
+            self._config_entry,
             title=f"{translated_entity_type} - {room_name}",
             data={
                 CONF_ROOM: room_name,
@@ -453,7 +453,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_INTEGRATION_ROOMS: user_input.get(CONF_INTEGRATION_ROOMS, [])
             }
         )
-        await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+        await self.hass.config_entries.async_reload(self._config_entry.entry_id)
 
     async def async_remove_sensor_entities(self, room_name):
         """Remove all sensor entities associated with the old room name and log them."""
