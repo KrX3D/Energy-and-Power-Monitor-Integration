@@ -2,6 +2,7 @@ import logging
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy, STATE_UNKNOWN, STATE_UNAVAILABLE
+from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
     ENTITY_TYPE_POWER,
@@ -101,9 +102,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     """Check if selected entities still exist, and remove those that don't."""
     _LOGGER.debug("Executing function check_and_remove_nonexistent_entities")
+    entity_registry = er.async_get(hass)
     valid_entities = []
     for entity_id in entities:
-        if hass.states.get(entity_id):
+        if entity_id in entity_registry.entities:
             #_LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
             valid_entities.append(entity_id)  # Keep the entity if it exists
         else:
@@ -115,16 +117,17 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
 def expand_integration_room_entities(hass: HomeAssistant, entities, integration_rooms, entity_type):
     """Expand selected integration rooms into their tracked entities."""
     if not integration_rooms:
-        return entities
+        return entities or []
 
-    selected_entities = list(entities)
-    all_sensors = hass.states.async_entity_ids("sensor")
+    entity_registry = er.async_get(hass)
+    selected_entities = list(entities or [])
+    all_sensors = [entity_id for entity_id in entity_registry.entities if entity_id.startswith("sensor.")]
     for room_id in integration_rooms:
         room_entities = [entity for entity in all_sensors if entity.startswith(room_id)]
         if room_entities:
             selected_entities.extend(room_entities)
         untracked_entity = f"{room_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
-        if hass.states.get(untracked_entity):
+        if untracked_entity in entity_registry.entities:
             selected_entities.append(untracked_entity)
 
     return sorted(set(selected_entities))

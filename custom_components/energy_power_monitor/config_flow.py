@@ -254,18 +254,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=[]): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    include_entities=[option["value"] for option in entity_options],
-                    multiple=True
-                )
-            ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    include_entities=[option["value"] for option in integration_room_options],
-                    multiple=True
-                )
-            )
+            vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="select_entities", data_schema=data_schema, errors=errors)
 
@@ -509,18 +499,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    include_entities=[option["value"] for option in entity_option_list],
-                    multiple=True
-                )
-            ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    include_entities=[option["value"] for option in integration_room_options],
-                    multiple=True
-                )
-            )
+            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="user", data_schema=options_schema, errors=errors)
 
