@@ -258,14 +258,14 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 selector.SelectSelectorConfig(
                     options=entity_options,
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST
+                    mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=integration_room_options,
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST
+                    mode=selector.SelectSelectorMode.DROPDOWN
                 )
             )
         })
@@ -515,14 +515,14 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.SelectSelectorConfig(
                     options=entity_option_list,
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST
+                    mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=integration_room_options,
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST
+                    mode=selector.SelectSelectorMode.DROPDOWN
                 )
             )
         })
