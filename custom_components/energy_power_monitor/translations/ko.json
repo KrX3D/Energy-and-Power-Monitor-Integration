@@ -1,56 +1,52 @@
 {
-    "entity_type": {
-        "power": "전력",
-        "energy": "에너지"
-    },
-    "config": {
-        "step": {
-            "user": {
-                "data": {
-                    "room": "구역 이름",
-                    "entity_type": "엔티티 유형 필터"
-                },
-                "title": "구역 설정",
-                "description": "구역과 유형 선택"
-            },
-            "select_entities": {
-                "data": {
-                    "smart_meter_device": "이 구역의 스마트 모니터",
-                    "entities": "엔티티",
-                    "integration_rooms": "포함된 구역",
-                    "none": "없음"
-                },
-                "title": "구역 설정",
-                "description": "이 구역의 스마트 모니터와 포함된 센서를 선택하세요"
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "title": "구역 재구성",
-                "description": "구역 이름, 스마트 모니터 또는 센서를 변경하세요",
-                "data": {
-                    "room": "구역",
-                    "smart_meter_device": "이 구역의 스마트 모니터",
-                    "entities": "엔티티",
-                    "integration_rooms": "포함된 구역",
-                    "none": "없음"
-                }
-            },
-            "select_entities": {
-                "data": {
-                    "none": "없음"
-                }
-            }
-        }
-    },
-    "selector": {
-        "entity_type": {
-            "options": {
-                "energy": "에너지",
-                "power": "전력"
-            }
-        }
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "구역 이름",
+          "entity_type": "엔티티 유형 필터"
+        },
+        "title": "구역 설정",
+        "description": "구역과 유형 선택"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "이 구역의 스마트 모니터",
+          "entities": "엔티티",
+          "integration_rooms": "포함된 구역",
+          "none": "없음"
+        },
+        "title": "구역 설정",
+        "description": "이 구역의 스마트 모니터와 포함된 센서를 선택하세요"
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "구역 재구성",
+        "description": "구역 이름, 스마트 모니터 또는 센서를 변경하세요",
+        "data": {
+          "room": "구역",
+          "smart_meter_device": "이 구역의 스마트 모니터",
+          "entities": "엔티티",
+          "integration_rooms": "포함된 구역",
+          "none": "없음"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "없음"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "에너지",
+        "power": "전력"
+      }
+    }
+  }
 }

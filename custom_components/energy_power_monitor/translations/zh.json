@@ -1,56 +1,52 @@
 {
-    "entity_type": {
-        "power": "功率",
-        "energy": "能量"
-    },
-    "config": {
-        "step": {
-            "user": {
-                "data": {
-                    "room": "区域名称",
-                    "entity_type": "实体类型过滤"
-                },
-                "title": "区域配置",
-                "description": "选择区域和类型"
-            },
-            "select_entities": {
-                "data": {
-                    "smart_meter_device": "此区域的智能监控",
-                    "entities": "实体",
-                    "integration_rooms": "包含的区域",
-                    "none": "无"
-                },
-                "title": "区域配置",
-                "description": "选择此区域的智能监控及包含的传感器"
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "title": "重新配置区域",
-                "description": "更改区域名称、智能监控或传感器",
-                "data": {
-                    "room": "区域",
-                    "smart_meter_device": "此区域的智能监控",
-                    "entities": "实体",
-                    "integration_rooms": "包含的区域",
-                    "none": "无"
-                }
-            },
-            "select_entities": {
-                "data": {
-                    "none": "无"
-                }
-            }
-        }
-    },
-    "selector": {
-        "entity_type": {
-            "options": {
-                "energy": "能量",
-                "power": "功率"
-            }
-        }
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "区域名称",
+          "entity_type": "实体类型过滤"
+        },
+        "title": "区域配置",
+        "description": "选择区域和类型"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "此区域的智能监控",
+          "entities": "实体",
+          "integration_rooms": "包含的区域",
+          "none": "无"
+        },
+        "title": "区域配置",
+        "description": "选择此区域的智能监控及包含的传感器"
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "重新配置区域",
+        "description": "更改区域名称、智能监控或传感器",
+        "data": {
+          "room": "区域",
+          "smart_meter_device": "此区域的智能监控",
+          "entities": "实体",
+          "integration_rooms": "包含的区域",
+          "none": "无"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "无"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "能量",
+        "power": "功率"
+      }
+    }
+  }
 }

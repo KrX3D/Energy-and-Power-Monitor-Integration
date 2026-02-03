@@ -1,56 +1,52 @@
 {
-    "entity_type": {
-        "power": "Vermogen",
-        "energy": "Energie"
-    },
-    "config": {
-        "step": {
-            "user": {
-                "data": {
-                    "room": "Zonenaam",
-                    "entity_type": "Entiteitstype Filter"
-                },
-                "title": "Zoneconfiguratie",
-                "description": "Selecteer de zone en het type"
-            },
-            "select_entities": {
-                "data": {
-                    "smart_meter_device": "Slimme monitor voor deze zone",
-                    "entities": "Entiteiten",
-                    "integration_rooms": "Inbegrepen zones",
-                    "none": "Geen"
-                },
-                "title": "Zoneconfiguratie",
-                "description": "Selecteer een slimme monitor voor deze zone en de inbegrepen sensoren"
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "title": "Zone opnieuw configureren",
-                "description": "Wijzig de zonenaam, slimme monitor of sensoren",
-                "data": {
-                    "room": "Zone",
-                    "smart_meter_device": "Slimme monitor voor deze zone",
-                    "entities": "Entiteiten",
-                    "integration_rooms": "Inbegrepen zones",
-                    "none": "Geen"
-                }
-            },
-            "select_entities": {
-                "data": {
-                    "none": "Geen"
-                }
-            }
-        }
-    },
-    "selector": {
-        "entity_type": {
-            "options": {
-                "energy": "Energie",
-                "power": "Vermogen"
-            }
-        }
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "Zonenaam",
+          "entity_type": "Entiteitstype Filter"
+        },
+        "title": "Zoneconfiguratie",
+        "description": "Selecteer de zone en het type"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "Slimme monitor voor deze zone",
+          "entities": "Entiteiten",
+          "integration_rooms": "Inbegrepen zones",
+          "none": "Geen"
+        },
+        "title": "Zoneconfiguratie",
+        "description": "Selecteer een slimme monitor voor deze zone en de inbegrepen sensoren"
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Zone opnieuw configureren",
+        "description": "Wijzig de zonenaam, slimme monitor of sensoren",
+        "data": {
+          "room": "Zone",
+          "smart_meter_device": "Slimme monitor voor deze zone",
+          "entities": "Entiteiten",
+          "integration_rooms": "Inbegrepen zones",
+          "none": "Geen"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "Geen"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "Energie",
+        "power": "Vermogen"
+      }
+    }
+  }
 }

@@ -1,8 +1,4 @@
 {
-  "entity_type": {
-    "power": "Power",
-    "energy": "Energy"
-  },
   "config": {
     "step": {
       "user": {

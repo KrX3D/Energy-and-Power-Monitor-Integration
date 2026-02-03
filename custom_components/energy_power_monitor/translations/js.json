@@ -1,56 +1,52 @@
 {
-    "entity_type": {
-        "power": "パワー",
-        "energy": "エネルギー"
-    },
-    "config": {
-        "step": {
-            "user": {
-                "data": {
-                    "room": "ゾーン名",
-                    "entity_type": "エンティティタイプフィルタ"
-                },
-                "title": "ゾーンの設定",
-                "description": "ゾーンとタイプを選択"
-            },
-            "select_entities": {
-                "data": {
-                    "smart_meter_device": "このゾーンのスマートモニター",
-                    "entities": "エンティティ",
-                    "integration_rooms": "含まれるゾーン",
-                    "none": "なし"
-                },
-                "title": "ゾーンの設定",
-                "description": "このゾーンのスマートモニターと含まれるセンサーを選択します"
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "title": "ゾーンを再構成する",
-                "description": "ゾーン名、スマートモニター、またはセンサーを変更します",
-                "data": {
-                    "room": "ゾーン",
-                    "smart_meter_device": "このゾーンのスマートモニター",
-                    "entities": "エンティティ",
-                    "integration_rooms": "含まれるゾーン",
-                    "none": "なし"
-                }
-            },
-            "select_entities": {
-                "data": {
-                    "none": "なし"
-                }
-            }
-        }
-    },
-    "selector": {
-        "entity_type": {
-            "options": {
-                "energy": "エネルギー",
-                "power": "パワー"
-            }
-        }
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "ゾーン名",
+          "entity_type": "エンティティタイプフィルタ"
+        },
+        "title": "ゾーンの設定",
+        "description": "ゾーンとタイプを選択"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "このゾーンのスマートモニター",
+          "entities": "エンティティ",
+          "integration_rooms": "含まれるゾーン",
+          "none": "なし"
+        },
+        "title": "ゾーンの設定",
+        "description": "このゾーンのスマートモニターと含まれるセンサーを選択します"
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "ゾーンを再構成する",
+        "description": "ゾーン名、スマートモニター、またはセンサーを変更します",
+        "data": {
+          "room": "ゾーン",
+          "smart_meter_device": "このゾーンのスマートモニター",
+          "entities": "エンティティ",
+          "integration_rooms": "含まれるゾーン",
+          "none": "なし"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "なし"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "エネルギー",
+        "power": "パワー"
+      }
+    }
+  }
 }

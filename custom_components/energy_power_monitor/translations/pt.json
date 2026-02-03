@@ -1,56 +1,52 @@
 {
-    "entity_type": {
-        "power": "Potência",
-        "energy": "Energia"
-    },
-    "config": {
-        "step": {
-            "user": {
-                "data": {
-                    "room": "Nome da Zona",
-                    "entity_type": "Filtro de Tipo de Entidade"
-                },
-                "title": "Configuração da Zona",
-                "description": "Selecione a zona e o tipo"
-            },
-            "select_entities": {
-                "data": {
-                    "smart_meter_device": "Monitor inteligente para esta zona",
-                    "entities": "Entidades",
-                    "integration_rooms": "Zonas incluídas",
-                    "none": "Nenhum"
-                },
-                "title": "Configuração da Zona",
-                "description": "Selecione um monitor inteligente para esta zona e os sensores incluídos"
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "title": "Reconfigurar Zona",
-                "description": "Mude o nome da zona, o monitor inteligente ou os sensores",
-                "data": {
-                    "room": "Zona",
-                    "smart_meter_device": "Monitor inteligente para esta zona",
-                    "entities": "Entidades",
-                    "integration_rooms": "Zonas incluídas",
-                    "none": "Nenhum"
-                }
-            },
-            "select_entities": {
-                "data": {
-                    "none": "Nenhum"
-                }
-            }
-        }
-    },
-    "selector": {
-        "entity_type": {
-            "options": {
-                "energy": "Energia",
-                "power": "Potência"
-            }
-        }
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "Nome da Zona",
+          "entity_type": "Filtro de Tipo de Entidade"
+        },
+        "title": "Configuração da Zona",
+        "description": "Selecione a zona e o tipo"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "Monitor inteligente para esta zona",
+          "entities": "Entidades",
+          "integration_rooms": "Zonas incluídas",
+          "none": "Nenhum"
+        },
+        "title": "Configuração da Zona",
+        "description": "Selecione um monitor inteligente para esta zona e os sensores incluídos"
+      }
     }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Reconfigurar Zona",
+        "description": "Mude o nome da zona, o monitor inteligente ou os sensores",
+        "data": {
+          "room": "Zona",
+          "smart_meter_device": "Monitor inteligente para esta zona",
+          "entities": "Entidades",
+          "integration_rooms": "Zonas incluídas",
+          "none": "Nenhum"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "Nenhum"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "Energia",
+        "power": "Potência"
+      }
+    }
+  }
 }
