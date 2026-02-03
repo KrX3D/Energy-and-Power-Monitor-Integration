@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "部屋の名前",
+                    "room": "ゾーン名",
                     "entity_type": "エンティティタイプフィルタ"
                 },
-                "title": "部屋の設定",
-                "description": "部屋とタイプを選択"
+                "title": "ゾーンの設定",
+                "description": "ゾーンとタイプを選択"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "スマートモニターデバイス",
+                    "smart_meter_device": "このゾーンのスマートモニター",
                     "entities": "エンティティ",
-                    "integration_rooms": "作成された部屋",
+                    "integration_rooms": "含まれるゾーン",
                     "none": "なし"
                 },
-                "title": "部屋の設定",
-                "description": "スマートモニターデバイスを選択し、それに接続されているすべてのセンサーを選択します"
+                "title": "ゾーンの設定",
+                "description": "このゾーンのスマートモニターと含まれるセンサーを選択します"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "部屋を再構成する",
-                "description": "部屋の名前、スマートモニターデバイス、またはセンサーを変更します",
+                "title": "ゾーンを再構成する",
+                "description": "ゾーン名、スマートモニター、またはセンサーを変更します",
                 "data": {
-                    "room": "部屋",
-                    "smart_meter_device": "スマートモニターデバイス",
+                    "room": "ゾーン",
+                    "smart_meter_device": "このゾーンのスマートモニター",
                     "entities": "エンティティ",
-                    "integration_rooms": "作成された部屋",
+                    "integration_rooms": "含まれるゾーン",
                     "none": "なし"
                 }
             },
