@@ -254,18 +254,16 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=[]): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=entity_options,
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN
+            vol.Optional(CONF_ENTITIES, default=[]): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    include_entities=[option["value"] for option in entity_options],
+                    multiple=True
                 )
             ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=integration_room_options,
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    include_entities=[option["value"] for option in integration_room_options],
+                    multiple=True
                 )
             )
         })
@@ -511,18 +509,16 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=entity_option_list,
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN
+            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    include_entities=[option["value"] for option in entity_option_list],
+                    multiple=True
                 )
             ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=integration_room_options,
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    include_entities=[option["value"] for option in integration_room_options],
+                    multiple=True
                 )
             )
         })
