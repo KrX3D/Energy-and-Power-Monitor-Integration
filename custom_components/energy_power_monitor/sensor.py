@@ -1,4 +1,5 @@
 import logging
+import unicodedata
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy, STATE_UNKNOWN, STATE_UNAVAILABLE
@@ -119,16 +120,28 @@ def expand_integration_room_entities(hass: HomeAssistant, entities, integration_
     if not integration_rooms:
         return entities or []
 
+    entry_entities = {}
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        room_name = entry.data.get("room")
+        entry_entity_type = entry.data.get("entity_type")
+        if not room_name or not entry_entity_type:
+            continue
+        normalized_name = unicodedata.normalize("NFKD", room_name).encode("ascii", "ignore").decode("utf-8")
+        sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_").lower()
+        entry_entity_id = f"sensor.{DOMAIN}_{sanitized_room_name}_{entry_entity_type}"
+        entry_entities[entry_entity_id] = entry.data.get(CONF_ENTITIES, [])
+
     entity_registry = er.async_get(hass)
     selected_entities = list(entities or [])
     all_sensors = [entity_id for entity_id in entity_registry.entities if entity_id.startswith("sensor.")]
-    for room_id in integration_rooms:        
+    for room_id in integration_rooms:
+        if room_id in entry_entities:
+            selected_entities.extend(entry_entities[room_id])
         room_state = hass.states.get(room_id)
         if room_state:
             selected_from_room = room_state.attributes.get("selected_entities", [])
             if selected_from_room:
                 selected_entities.extend(selected_from_room)
-                
         room_entities = [entity for entity in all_sensors if entity.startswith(room_id)]
         if room_entities:
             selected_entities.extend(room_entities)
