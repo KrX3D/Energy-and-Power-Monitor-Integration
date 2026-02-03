@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "Nome della Stanza",
+                    "room": "Nome della Zona",
                     "entity_type": "Filtro Tipo Entità"
                 },
-                "title": "Configurazione della Stanza",
-                "description": "Seleziona la stanza e il tipo"
+                "title": "Configurazione della Zona",
+                "description": "Seleziona la zona e il tipo"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "Dispositivo di Monitoraggio Intelligente",
+                    "smart_meter_device": "Monitor intelligente per questa zona",
                     "entities": "Entità",
-                    "integration_rooms": "Stanze Create",
+                    "integration_rooms": "Zone incluse",
                     "none": "Nessuna"
                 },
-                "title": "Configurazione della Stanza",
-                "description": "Seleziona un dispositivo di monitoraggio intelligente e tutti i sensori ad esso collegati"
+                "title": "Configurazione della Zona",
+                "description": "Seleziona un monitor intelligente per questa zona e i sensori inclusi"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "Reconfigura Stanza",
-                "description": "Cambia il nome della stanza, il dispositivo di monitoraggio intelligente o i sensori",
+                "title": "Reconfigura Zona",
+                "description": "Cambia il nome della zona, il monitor intelligente o i sensori",
                 "data": {
-                    "room": "Stanza",
-                    "smart_meter_device": "Dispositivo di Monitoraggio Intelligente",
+                    "room": "Zona",
+                    "smart_meter_device": "Monitor intelligente per questa zona",
                     "entities": "Entità",
-                    "integration_rooms": "Stanze Create",
+                    "integration_rooms": "Zone incluse",
                     "none": "Nessuna"
                 }
             },

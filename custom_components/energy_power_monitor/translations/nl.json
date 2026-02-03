@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "Kamersnaam",
+                    "room": "Zonenaam",
                     "entity_type": "Entiteitstype Filter"
                 },
-                "title": "Kamersetting",
-                "description": "Selecteer de kamer en het type"
+                "title": "Zoneconfiguratie",
+                "description": "Selecteer de zone en het type"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "Slimme Monitor Apparaat",
+                    "smart_meter_device": "Slimme monitor voor deze zone",
                     "entities": "Entiteiten",
-                    "integration_rooms": "Gemaakte Kamers",
+                    "integration_rooms": "Inbegrepen zones",
                     "none": "Geen"
                 },
-                "title": "Kamersetting",
-                "description": "Selecteer een slim monitor apparaat en alle sensoren die eraan zijn verbonden"
+                "title": "Zoneconfiguratie",
+                "description": "Selecteer een slimme monitor voor deze zone en de inbegrepen sensoren"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "Kamer opnieuw configureren",
-                "description": "Wijzig de kamernaam, slim monitor apparaat of sensoren",
+                "title": "Zone opnieuw configureren",
+                "description": "Wijzig de zonenaam, slimme monitor of sensoren",
                 "data": {
-                    "room": "Kamer",
-                    "smart_meter_device": "Slimme Monitor Apparaat",
+                    "room": "Zone",
+                    "smart_meter_device": "Slimme monitor voor deze zone",
                     "entities": "Entiteiten",
-                    "integration_rooms": "Gemaakte Kamers",
+                    "integration_rooms": "Inbegrepen zones",
                     "none": "Geen"
                 }
             },

@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "Nome do Quarto",
+                    "room": "Nome da Zona",
                     "entity_type": "Filtro de Tipo de Entidade"
                 },
-                "title": "Configuração do Quarto",
-                "description": "Selecione o quarto e o tipo"
+                "title": "Configuração da Zona",
+                "description": "Selecione a zona e o tipo"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "Dispositivo de Monitoramento Inteligente",
+                    "smart_meter_device": "Monitor inteligente para esta zona",
                     "entities": "Entidades",
-                    "integration_rooms": "Quartoss Criados",
+                    "integration_rooms": "Zonas incluídas",
                     "none": "Nenhum"
                 },
-                "title": "Configuração do Quarto",
-                "description": "Selecione um dispositivo de monitoramento inteligente e todos os sensores conectados a ele"
+                "title": "Configuração da Zona",
+                "description": "Selecione um monitor inteligente para esta zona e os sensores incluídos"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "Reconfigurar Quarto",
-                "description": "Mude o nome do quarto, o dispositivo de monitoramento inteligente ou os sensores",
+                "title": "Reconfigurar Zona",
+                "description": "Mude o nome da zona, o monitor inteligente ou os sensores",
                 "data": {
-                    "room": "Quarto",
-                    "smart_meter_device": "Dispositivo de Monitoramento Inteligente",
+                    "room": "Zona",
+                    "smart_meter_device": "Monitor inteligente para esta zona",
                     "entities": "Entidades",
-                    "integration_rooms": "Quartoss Criados",
+                    "integration_rooms": "Zonas incluídas",
                     "none": "Nenhum"
                 }
             },
