@@ -37,7 +37,7 @@ async def get_translated_none(hass: HomeAssistant):
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
-    reload_scheduled = False
+    reload_scheduled_entries = hass.data.setdefault(f"{DOMAIN}_reload_scheduled_entries", set())
 
     async def check_and_setup_entities(event=None):  # Set event=None to make it optional
         """Check for and remove non-existent entities when Home Assistant is fully started."""
@@ -61,18 +61,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             integration_rooms,
             entity_type,
         )
-        if set(expanded_entities) != set(entities):
+        base_entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        if set(base_entities_checked) != set(entities):
             new_data = entry.data.copy()
-            new_data[CONF_ENTITIES] = expanded_entities
-            hass.config_entries.async_update_entry(entry, data=new_data)
-            entities = expanded_entities
-
-        entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
-        if set(entities_checked) != set(entities):
-            new_data = entry.data.copy()
-            new_data[CONF_ENTITIES] = entities_checked
+            new_data[CONF_ENTITIES] = base_entities_checked
             hass.config_entries.async_update_entry(entry, data=new_data)
             _LOGGER.debug("Config entry updated with valid entities.")
+
+        entities_checked = check_and_remove_nonexistent_entities(hass, expanded_entities, entry)
 
         _LOGGER.debug(
             f"Setting up Energy and Power Monitor sensor: room_name={room_name}, "
@@ -93,9 +89,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
-        nonlocal reload_scheduled
-        if not reload_scheduled:
-            reload_scheduled = True
+        if entry.entry_id not in reload_scheduled_entries:
+            reload_scheduled_entries.add(entry.entry_id)
 
             async def _reload_entry(_now):
                 await hass.config_entries.async_reload(entry.entry_id)
