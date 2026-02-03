@@ -244,7 +244,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
         entity_options = build_entity_options(self.hass, sorted(filtered_entities))
         smart_meter_options = list(entity_options)
-        smart_meter_options.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        smart_meter_options.insert(0, {"value": "", "label": TRANSLATION_NONE})
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
@@ -483,12 +483,15 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         sorted_options.insert(0, TRANSLATION_NONE)
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
-        default_smart_meter_device = old_entities_smd if old_entities_smd else TRANSLATION_NONE
+        if old_entities_smd == TRANSLATION_NONE:
+            default_smart_meter_device = ""
+        else:
+            default_smart_meter_device = old_entities_smd if old_entities_smd else ""
         smart_meter_option_list = build_entity_options(
             self.hass,
             [option for option in sorted_options if option != TRANSLATION_NONE]
         )
-        smart_meter_option_list.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        smart_meter_option_list.insert(0, {"value": "", "label": TRANSLATION_NONE})
         entity_option_list = build_entity_options(self.hass, combined_entities)
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
