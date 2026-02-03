@@ -122,15 +122,13 @@ def expand_integration_room_entities(hass: HomeAssistant, entities, integration_
     entity_registry = er.async_get(hass)
     selected_entities = list(entities or [])
     all_sensors = [entity_id for entity_id in entity_registry.entities if entity_id.startswith("sensor.")]
-    for room_id in integration_rooms:
-<<<<<<< codex/improve-gui-and-optimize-integration
+    for room_id in integration_rooms:        
         room_state = hass.states.get(room_id)
         if room_state:
             selected_from_room = room_state.attributes.get("selected_entities", [])
             if selected_from_room:
                 selected_entities.extend(selected_from_room)
-=======
->>>>>>> main
+                
         room_entities = [entity for entity in all_sensors if entity.startswith(room_id)]
         if room_entities:
             selected_entities.extend(room_entities)
