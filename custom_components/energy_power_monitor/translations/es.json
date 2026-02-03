@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "Nombre del Salón",
+                    "room": "Nombre de la Zona",
                     "entity_type": "Filtro de Tipo de Entidad"
                 },
-                "title": "Configuración de la Sala",
-                "description": "Seleccione la sala y el tipo"
+                "title": "Configuración de la Zona",
+                "description": "Seleccione la zona y el tipo"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "Dispositivo de Monitoreo Inteligente",
+                    "smart_meter_device": "Monitor inteligente para esta zona",
                     "entities": "Entidades",
-                    "integration_rooms": "Salas Creadas",
+                    "integration_rooms": "Zonas incluidas",
                     "none": "Ninguna"
                 },
-                "title": "Configuración de la Sala",
-                "description": "Seleccione un dispositivo de monitoreo inteligente y todos los sensores conectados a él"
+                "title": "Configuración de la Zona",
+                "description": "Seleccione un monitor inteligente para esta zona y los sensores incluidos"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "Reconfigurar Sala",
-                "description": "Cambie el nombre de la sala, el dispositivo de monitoreo inteligente o los sensores",
+                "title": "Reconfigurar Zona",
+                "description": "Cambie el nombre de la zona, el monitor inteligente o los sensores",
                 "data": {
-                    "room": "Sala",
-                    "smart_meter_device": "Dispositivo de Monitoreo Inteligente",
+                    "room": "Zona",
+                    "smart_meter_device": "Monitor inteligente para esta zona",
                     "entities": "Entidades",
-                    "integration_rooms": "Salas Creadas",
+                    "integration_rooms": "Zonas incluidas",
                     "none": "Ninguna"
                 }
             },

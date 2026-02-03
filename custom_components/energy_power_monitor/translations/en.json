@@ -7,34 +7,34 @@
     "step": {
       "user": {
         "data": {
-          "room": "Room Name",
+          "room": "Zone Name",
           "entity_type": "Entity Type Filter"
         },
-        "title": "Room Configuration",
-        "description": "Select the room and the type"
+        "title": "Zone Configuration",
+        "description": "Select the zone and the type"
       },
       "select_entities": {
         "data": {
-          "smart_meter_device": "Smart Device Meter",
+          "smart_meter_device": "Smart Monitor for this Zone",
           "entities": "Entities",
-          "integration_rooms": "Created Rooms",
+          "integration_rooms": "Included Zones",
           "none": "None"
         },
-        "title": "Room Configuration",
-        "description": "Select a Smart Monitor device and all sensors connected to it"
+        "title": "Zone Configuration",
+        "description": "Select a Smart Monitor for this zone and the sensors included in it"
       }
     }
   },
   "options": {
     "step": {
       "user": {
-        "title": "Reconfigure Room",
-        "description": "Change the room name, Smart Monitor device, or sensors",
+        "title": "Reconfigure Zone",
+        "description": "Change the zone name, Smart Monitor, or sensors",
         "data": {
-          "room": "Room",
-          "smart_meter_device": "Smart Device Meter",
+          "room": "Zone",
+          "smart_meter_device": "Smart Monitor for this Zone",
           "entities": "Entities",
-          "integration_rooms": "Created Rooms",
+          "integration_rooms": "Included Zones",
           "none": "None"
         }
       },
