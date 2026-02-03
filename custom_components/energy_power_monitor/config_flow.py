@@ -19,6 +19,19 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # Shared functions
+def build_entity_options(hass, entity_ids):
+    """Build select options with friendly names for entity IDs."""
+    options = []
+    for entity_id in entity_ids:
+        state = hass.states.get(entity_id)
+        label = state.attributes.get("friendly_name", entity_id) if state else entity_id
+        options.append({"value": entity_id, "label": label})
+    return options
+
+def build_select_options_from_map(entity_map):
+    """Build select options from a mapping of entity_id -> friendly_name."""
+    return [{"value": entity_id, "label": friendly_name} for entity_id, friendly_name in entity_map.items()]
+
 def get_filtered_entities_for_room(hass, room_id):
     """Retrieve the filtered entities for a specific room."""
     _LOGGER.debug(f"get_filtered_entities_for_room function start")
@@ -229,12 +242,18 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Remove rooms already assigned
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
-        smart_meter_options = list(filtered_entities)
-        sorted_options = sorted(smart_meter_options)
-        sorted_options.insert(0, TRANSLATION_NONE)
+        entity_options = build_entity_options(self.hass, sorted(filtered_entities))
+        smart_meter_options = list(entity_options)
+        smart_meter_options.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=smart_meter_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN
+                )
+            ),
             vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
@@ -465,9 +484,21 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
         default_smart_meter_device = old_entities_smd if old_entities_smd else TRANSLATION_NONE
+        smart_meter_option_list = build_entity_options(
+            self.hass,
+            [option for option in sorted_options if option != TRANSLATION_NONE]
+        )
+        smart_meter_option_list.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        entity_option_list = build_entity_options(self.hass, combined_entities)
+        integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.In(sorted_options),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=smart_meter_option_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN
+                )
+            ),
             vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
