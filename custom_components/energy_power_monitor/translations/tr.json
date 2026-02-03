@@ -7,34 +7,34 @@
         "step": {
             "user": {
                 "data": {
-                    "room": "Oda Adı",
+                    "room": "Bölge Adı",
                     "entity_type": "Varlık Tipi Filtre"
                 },
-                "title": "Oda Yapılandırması",
-                "description": "Odayı ve tipi seçin"
+                "title": "Bölge Yapılandırması",
+                "description": "Bölgeyi ve tipi seçin"
             },
             "select_entities": {
                 "data": {
-                    "smart_meter_device": "Akıllı İzleme Cihazı",
+                    "smart_meter_device": "Bu bölge için akıllı izleme",
                     "entities": "Varlıklar",
-                    "integration_rooms": "Oluşturulan Odalar",
+                    "integration_rooms": "Dahil edilen bölgeler",
                     "none": "Hiçbiri"
                 },
-                "title": "Oda Yapılandırması",
-                "description": "Bir akıllı izleme cihazı ve ona bağlı tüm sensörleri seçin"
+                "title": "Bölge Yapılandırması",
+                "description": "Bu bölge için akıllı izlemeyi ve dahil edilen sensörleri seçin"
             }
         }
     },
     "options": {
         "step": {
             "user": {
-                "title": "Odayı Yeniden Yapılandır",
-                "description": "Oda adını, akıllı izleme cihazını veya sensörleri değiştirin",
+                "title": "Bölgeyi Yeniden Yapılandır",
+                "description": "Bölge adını, akıllı izlemeyi veya sensörleri değiştirin",
                 "data": {
-                    "room": "Oda",
-                    "smart_meter_device": "Akıllı İzleme Cihazı",
+                    "room": "Bölge",
+                    "smart_meter_device": "Bu bölge için akıllı izleme",
                     "entities": "Varlıklar",
-                    "integration_rooms": "Oluşturulan Odalar",
+                    "integration_rooms": "Dahil edilen bölgeler",
                     "none": "Hiçbiri"
                 }
             },
