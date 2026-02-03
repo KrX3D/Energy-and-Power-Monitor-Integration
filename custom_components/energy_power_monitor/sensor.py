@@ -15,7 +15,7 @@ from .const import (
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -37,6 +37,7 @@ async def get_translated_none(hass: HomeAssistant):
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
+    reload_scheduled = False
 
     async def check_and_setup_entities(event=None):  # Set event=None to make it optional
         """Check for and remove non-existent entities when Home Assistant is fully started."""
@@ -91,6 +92,15 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
+
+        nonlocal reload_scheduled
+        if not reload_scheduled:
+            reload_scheduled = True
+
+            async def _reload_entry(_now):
+                await hass.config_entries.async_reload(entry.entry_id)
+
+            async_call_later(hass, 5, _reload_entry)
 
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
