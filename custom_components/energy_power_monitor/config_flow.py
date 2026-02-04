@@ -146,12 +146,20 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
 def get_selected_integration_rooms(hass, existing_rooms):
     """Retrieve integration rooms already assigned in config entries."""
     _LOGGER.debug("get_selected_integration_rooms function start")
-    assigned_rooms = {}
-    for entry in hass.config_entries.async_entries(DOMAIN):
-        for room_id in entry.data.get(CONF_INTEGRATION_ROOMS, []):
-            if room_id in existing_rooms:
-                assigned_rooms[room_id] = existing_rooms[room_id]
-    return dict(sorted(assigned_rooms.items(), key=lambda item: item[1]))
+    filtered_entities_with_friendly_name = {}
+    for entity_id in existing_rooms:
+        entity_state = hass.states.get(entity_id)
+        if entity_state:
+            selected_entities = entity_state.attributes.get("selected_entities", [])
+            for entity in selected_entities:
+                if entity.startswith(f"sensor.{DOMAIN}") and not entity.endswith(("_untracked_power", "_untracked_energy")):
+                    selected_state = hass.states.get(entity)
+                    if not selected_state:
+                        continue
+                    friendly_name = selected_state.attributes.get("friendly_name", entity)
+                    friendly_name = friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
+                    filtered_entities_with_friendly_name[entity] = friendly_name
+    return dict(sorted(filtered_entities_with_friendly_name.items(), key=lambda item: item[1]))
 
 @config_entries.HANDLERS.register(DOMAIN)
 class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -212,7 +220,14 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-            selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
+            selected_entities = get_selected_entities_for_rooms(
+                self.hass,
+                selected_existing_rooms,
+                integration_entities,
+                selected_entities,
+                self.selected_type,
+            )
+            selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # If the field is cleared, store None so tracking is disabled.
             if selected_smd in ("", TRANSLATION_NONE, None):
