@@ -230,7 +230,10 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 selected_entities,
                 self.selected_type,
             )
-            selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+            if CONF_SMART_METER_DEVICE in user_input:
+                selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+            else:
+                selected_smd = None
             _LOGGER.info(f"selected_smd before: {selected_smd}")
             # If the field is cleared, store None so tracking is disabled.
             if selected_smd in ("", TRANSLATION_NONE, None):
@@ -388,7 +391,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
+                if CONF_SMART_METER_DEVICE in user_input:
+                    selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+                else:
+                    selected_smd = None
                 # Check if the user has deselected the smart meter device
                 if selected_smd in ("", TRANSLATION_NONE, None):
                     selected_smd = None
