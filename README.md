@@ -1,6 +1,6 @@
 # Energy and Power Monitor Integration
 
-A Home Assistant integration to group energy and power sensors for rooms or smart meter devices. This integration allows you to track the values of grouped entities and monitor untracked power consumption.
+A Home Assistant integration to group energy and power sensors for zones or smart meter devices. This integration allows you to track the values of grouped entities and monitor untracked power consumption.
 
 ---
 
@@ -36,28 +36,28 @@ Hello! This is my first integration and my first GitHub repository, so please be
 
 ## Configuration Overview
 
-### Step 1: Create a new room (power or energy)
-Choose **Power** or **Energy** and set a room name (e.g., *Living Room*).
+### Step 1: Create a new zone (power or energy)
+Choose **Power** or **Energy** and set a zone name (e.g., *Living Room*).
 
-### Step 2: Add entities, optional smart meter, and included rooms
+### Step 2: Add entities, optional smart meter, and included zones
 You can configure three things:
 
 - **Entities**
-  - Select the entities that belong to this room.
+  - Select the entities that belong to this zone.
   - The integration will create a sensor that sums them up.
 
 - **Smart Meter Device (optional)**
-  - Choose an optional smart meter for that room.
+  - Choose an optional smart meter for that zone.
   - The untracked sensor will show:  
     `smart_meter_value - sum_of_selected_entities`
 
-- **Created Rooms (optional)**
-  - Pick one or more already‑created rooms to create a hierarchy.
-  - This lets you build nested rooms like *House → Floor → Room*.
+- **Created Zones (optional)**
+  - Pick one or more already‑created zones to create a hierarchy.
+  - This lets you build nested zones like *House → Floor → Zone*.
 
 ---
 
-## Example Hierarchy (Nested Rooms)
+## Example Hierarchy (Nested Zones)
 
 ```
 HOUSE
@@ -72,10 +72,10 @@ HOUSE
 ```
 
 ### Example: A Whole‑House Summary
-1. Create *Living Room*, *Kitchen*, and *Bathroom* rooms with their own entities.
-2. Create a new room called *House*.
-3. In **Created Rooms**, select *Living Room*, *Kitchen*, and *Bathroom*.
-4. The *House* sensor will now represent the sum of those rooms.
+1. Create *Living Room*, *Kitchen*, and *Bathroom* zones with their own entities.
+2. Create a new zone called *House*.
+3. In **Created Zones**, select *Living Room*, *Kitchen*, and *Bathroom*.
+4. The *House* sensor will now represent the sum of those zones.
 
 ---
 
@@ -89,24 +89,24 @@ HOUSE
 
 **Second GUI:**
 - **Entities:**
-  - Select the energy/power entities for a specific room (e.g., the Living Room).
+  - Select the energy/power entities for a specific zone (e.g., the Living Room).
   - A sensor will be created that combines all selected energy/power values. For example: "Living Room - Power".
 - **Smart Meter Device:**
-  - You can optionally select a Smart Meter for the room (e.g., Living Room) or leave it as "None". The value of the selected Smart Meter will be subtracted from the sum of the 
-    selected entities in that room. The difference will be stored in a second sensor, such as "Untracked - Power".
-  - If you have created more rooms/subrooms, they will appear under **Created Rooms**.
-  - Selecting a room will aggregate the values from sensors like "Living Room - Power" and "Untracked - Power" (if present).
+  - You can optionally select a Smart Meter for the zone (e.g., Living Room) or leave it as "None". The value of the selected Smart Meter will be subtracted from the sum of the 
+    selected entities in that zone. The difference will be stored in a second sensor, such as "Untracked - Power".
+  - If you have created more zones/subzones, they will appear under **Created Zones**.
+  - Selecting a zone will aggregate the values from sensors like "Living Room - Power" and "Untracked - Power" (if present).
 
 - You can build a hierarchical view, where the topmost entity aggregates all the values from sub-entities.  
-  This way, you can monitor which device or room consumes how much energy or power.
+  This way, you can monitor which device or zone consumes how much energy or power.
 
 ---
 
 ## Devices & Entities created
 
-When you add a room, the integration creates:
+When you add a zone, the integration creates:
 
-- **Room sensor** (example: `sensor.energy_power_monitor_living_room_power`)
+- **Zone sensor** (example: `sensor.energy_power_monitor_living_room_power`)
   - Sum of all selected entities.
 
 - **Untracked sensor** (optional, if smart meter is selected)
@@ -118,5 +118,5 @@ When you add a room, the integration creates:
 ## Tips & Best Practices
 
 - Use **Power** for live consumption (W) and **Energy** for accumulated usage (kWh).
-- Build your hierarchy from the bottom up (devices → rooms → floors → house).
+- Build your hierarchy from the bottom up (devices → zones → floors → house).
 - Smart meters are optional, but helpful for identifying “unknown” consumption.

@@ -50,16 +50,16 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         TRANSLATION_NONE = await get_translated_none(hass)
 
         # Fetch configuration data
-        room_name = entry.data.get('room')
+        zone_name = entry.data.get('room')
         entities = entry.data.get(CONF_ENTITIES)
         entity_type = entry.data.get('entity_type')
-        integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+        integration_zones = entry.data.get(CONF_INTEGRATION_ROOMS, [])
         smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-        expanded_entities = expand_integration_room_entities(
+        expanded_entities = expand_integration_zone_entities(
             hass,
             entities,
-            integration_rooms,
+            integration_zones,
             entity_type,
         )
         base_entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
@@ -72,22 +72,22 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         entities_checked = check_and_remove_nonexistent_entities(hass, expanded_entities, entry)
 
         _LOGGER.debug(
-            f"Setting up Energy and Power Monitor sensor: room_name={room_name}, "
+            f"Setting up Energy and Power Monitor sensor: zone_name={zone_name}, "
             f"entities={entities_checked}, smart_meter_device={smart_meter_device}, "
             f"entry_id={entry.entry_id}, entity_type={entity_type}"
         )
 
-        if not room_name or not isinstance(entities_checked, list):
-            _LOGGER.error("Invalid configuration data: room_name or entities are missing or incorrect.")
+        if not zone_name or not isinstance(entities_checked, list):
+            _LOGGER.error("Invalid configuration data: zone_name or entities are missing or incorrect.")
             return False
 
-        # Create the main sensor for the room
-        sensor = EnergyandPowerMonitorSensor(hass, room_name, entities_checked, entry.entry_id, entity_type)
+        # Create the main sensor for the zone
+        sensor = EnergyandPowerMonitorSensor(hass, zone_name, entities_checked, entry.entry_id, entity_type)
         async_add_entities([sensor])
 
         # If a smart meter device was selected, create a second sensor for it
         if smart_meter_device and smart_meter_device != TRANSLATION_NONE:  # Only create if there's a valid device selected    
-            smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
+            smart_meter_sensor = SmartMeterSensor(hass, zone_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
     async def reload_integration_periodically(now):
@@ -132,17 +132,17 @@ def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     return valid_entities
 
 
-def expand_integration_room_entities(hass: HomeAssistant, entities, integration_rooms, entity_type):
-    """Expand selected integration rooms into their tracked entities."""
-    if not integration_rooms:
+def expand_integration_zone_entities(hass: HomeAssistant, entities, integration_zones, entity_type):
+    """Expand selected integration zones into their tracked entities."""
+    if not integration_zones:
         return entities or []
 
     entity_registry = er.async_get(hass)
     selected_entities = list(entities or [])
-    for room_id in integration_rooms:
-        if room_id in entity_registry.entities:
-            selected_entities.append(room_id)
-        untracked_entity = f"{room_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
+    for zone_id in integration_zones:
+        if zone_id in entity_registry.entities:
+            selected_entities.append(zone_id)
+        untracked_entity = f"{zone_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
         if untracked_entity in entity_registry.entities:
             selected_entities.append(untracked_entity)
 
@@ -165,10 +165,10 @@ def is_valid_value(state_obj):
 class EnergyandPowerMonitorSensor(SensorEntity):
     """Representation of an Energy and Power Monitor sensor with real-time updates."""
 
-    def __init__(self, hass: HomeAssistant, room_name, entities, entry_id, entity_type):
+    def __init__(self, hass: HomeAssistant, zone_name, entities, entry_id, entity_type):
         """Initialize the Energy and Power Monitor sensor."""
         self.hass = hass
-        self._room_name = room_name
+        self._zone_name = zone_name
         self._base_entities = list(entities)
         self._entities = list(entities)
         self._state = 0
@@ -178,7 +178,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
         self._unsubscribe_state_changes = None
         _LOGGER.debug(
-            f"EnergyandPowerMonitorSensor initialized: {self.entity_id} for room: {self._room_name}, "
+            f"EnergyandPowerMonitorSensor initialized: {self.entity_id} for zone: {self._zone_name}, "
             f"entity_type: {self._entity_type}"
         )
 
@@ -187,25 +187,30 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         if not entry:
             return self._entities
         base_entities = entry.data.get(CONF_ENTITIES, [])
-        integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+        integration_zones = entry.data.get(CONF_INTEGRATION_ROOMS, [])
         self._base_entities = list(base_entities)
         self.async_write_ha_state()
-        return expand_integration_room_entities(
+        return expand_integration_zone_entities(
             self.hass,
             base_entities,
-            integration_rooms,
+            integration_zones,
             self._entity_type,
         )
 
     def generate_unique_id(self):
         """Generate a unique ID for the sensor."""
-        sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"{DOMAIN}_{sanitized_room_name}_{self._entity_type}"
+        sanitized_zone_name = self._zone_name.lower().replace(' ', '_')
+        return f"{DOMAIN}_{sanitized_zone_name}_{self._entity_type}"
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self._room_name} selected entities - {self._entity_type.capitalize()}"
+        return f"{self._zone_name} selected entities - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def should_poll(self):
@@ -227,7 +232,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Return device info for the sensor."""
         return DeviceInfo(
             identifiers={(self._entry_id,)},
-            name=self._room_name,
+            name=self._zone_name,
             manufacturer="Custom",
             model="Energy and Power Monitor",
         )
@@ -293,7 +298,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             new_entities = self._get_expanded_entities(entry)
             if new_entities != self._entities:
                 _LOGGER.debug(
-                    f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}"
+                    f"{self._zone_name} sensor: updating entities from {self._entities} to {new_entities}"
                 )
                 self._entities = new_entities
                 # Resubscribe to new entities
@@ -321,7 +326,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             self._entities,
             self._on_state_change
         )
-        _LOGGER.debug(f"State listeners set up for {len(self._entities)} entities in {self._room_name}")
+        _LOGGER.debug(f"State listeners set up for {len(self._entities)} entities in {self._zone_name}")
 
     async def async_added_to_hass(self):
         """Called when entity is added to Home Assistant."""
@@ -344,7 +349,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Update listener: re-read configuration and update state."""
         new_entities = self._get_expanded_entities(entry)
         if new_entities != self._entities:
-            _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
+            _LOGGER.debug(f"{self._zone_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
             self._setup_state_listeners()
 
@@ -364,10 +369,10 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 class SmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter sensor with real-time updates."""
 
-    def __init__(self, hass: HomeAssistant, room_name, smart_meter_device, entry_id, entity_type, energy_power_monitor_sensor):
+    def __init__(self, hass: HomeAssistant, zone_name, smart_meter_device, entry_id, entity_type, energy_power_monitor_sensor):
         """Initialize the Smart Meter sensor."""
         self.hass = hass
-        self._room_name = room_name
+        self._zone_name = zone_name
         self._smart_meter_device = smart_meter_device
         self._entity_type = entity_type
         self._state = None
@@ -377,19 +382,24 @@ class SmartMeterSensor(SensorEntity):
         self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
         self._unsubscribe_state_changes = None
         _LOGGER.debug(
-            f"SmartMeterSensor initialized: {self.entity_id} for room: {self._room_name}, "
+            f"SmartMeterSensor initialized: {self.entity_id} for zone: {self._zone_name}, "
             f"smart_meter_device: {self._smart_meter_device}"
         )
 
     def generate_unique_id(self):
         """Generate a unique ID for the Smart Meter sensor."""
-        sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"{DOMAIN}_{sanitized_room_name}_untracked_{self._entity_type}"
+        sanitized_zone_name = self._zone_name.lower().replace(' ', '_')
+        return f"{DOMAIN}_{sanitized_zone_name}_untracked_{self._entity_type}"
 
     @property
     def name(self):
         """Return the name of the Smart Meter sensor."""
-        return f"{self._room_name} untracked - {self._entity_type.capitalize()}"
+        return f"{self._zone_name} untracked - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def should_poll(self):
@@ -409,15 +419,15 @@ class SmartMeterSensor(SensorEntity):
             sanitized_device_name = sanitized_device_name[:-6]
         elif sanitized_device_name.endswith('_energy'):
             sanitized_device_name = sanitized_device_name[:-7]
-        sanitized_room_name = self._room_name.lower().replace(' ', '_')
-        return f"smart_meter_{sanitized_room_name}_{sanitized_device_name}"
+        sanitized_zone_name = self._zone_name.lower().replace(' ', '_')
+        return f"smart_meter_{sanitized_zone_name}_{sanitized_device_name}"
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info for the sensor."""
         return DeviceInfo(
             identifiers={(self._entry_id,)},
-            name=self._room_name,
+            name=self._zone_name,
             manufacturer="Custom",
             model="Energy and Power Monitor",
         )

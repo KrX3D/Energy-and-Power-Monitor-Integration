@@ -11,7 +11,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 # Set up the component
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the energy_power_monitor component."""
-    hass.data.setdefault(DOMAIN, {"rooms": []})
+    hass.data.setdefault(DOMAIN, {"zones": []})
     return True
 
 # Handle the setup of the config entry
