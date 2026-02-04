@@ -19,6 +19,29 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # Shared functions
+def build_entity_options(hass, entity_ids):
+    """Build select options with friendly names for entity IDs."""
+    return [
+        {"value": entity_id, "label": label}
+        for entity_id, label in build_entity_label_map(hass, entity_ids).items()
+    ]
+
+def build_select_options_from_map(entity_map):
+    """Build select options from a mapping of entity_id -> friendly_name."""
+    return [{"value": entity_id, "label": friendly_name} for entity_id, friendly_name in entity_map.items()]
+
+def build_entity_label_map(hass, entity_ids):
+    """Build a mapping of entity_id -> friendly label."""
+    label_map = {}
+    for entity_id in entity_ids:
+        state = hass.states.get(entity_id)
+        if state:
+            friendly_name = state.attributes.get("friendly_name", entity_id)
+            label_map[entity_id] = f"{friendly_name} - {entity_id}"
+        else:
+            label_map[entity_id] = entity_id
+    return label_map
+
 def get_filtered_entities_for_room(hass, room_id):
     """Retrieve the filtered entities for a specific room."""
     _LOGGER.debug(f"get_filtered_entities_for_room function start")
@@ -201,13 +224,25 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-            selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
-            _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # If the field is cleared, use the translated 'None'
-            selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
-            _LOGGER.info(f"selected_smd after: {selected_smd}")
             # Get selected entities from the existing rooms
-            selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, self.selected_type)
+            selected_entities = get_selected_entities_for_rooms(
+                self.hass,
+                selected_existing_rooms,
+                integration_entities,
+                selected_entities,
+                self.selected_type,
+            )
+            if CONF_SMART_METER_DEVICE in user_input:
+                selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+            else:
+                selected_smd = None
+            _LOGGER.info(f"selected_smd before: {selected_smd}")
+            # If the field is cleared, store None so tracking is disabled.
+            if selected_smd in ("", TRANSLATION_NONE, None):
+                selected_smd = None
+            _LOGGER.info(f"selected_smd after: {selected_smd}")
+            if selected_smd and selected_smd in selected_entities:
+                selected_entities.remove(selected_smd)
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
             _LOGGER.info(f"Selected entities: {selected_entities}")
             _LOGGER.info(f"Entity type: {translated_entity_type}")
@@ -229,13 +264,21 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Remove rooms already assigned
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
-        smart_meter_options = list(filtered_entities)
-        sorted_options = sorted(smart_meter_options)
-        sorted_options.insert(0, TRANSLATION_NONE)
+        entity_options = build_entity_options(self.hass, sorted(filtered_entities))
+        smart_meter_options = list({option["value"]: option for option in entity_options}.values())
+        smart_meter_options.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): vol.In(sorted_options),
-            vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=smart_meter_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN
+                )
+            ),
+            vol.Optional(CONF_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, filtered_entities))
+            ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="select_entities", data_schema=data_schema, errors=errors)
@@ -350,15 +393,26 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+                if CONF_SMART_METER_DEVICE in user_input:
+                    selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+                else:
+                    selected_smd = None
                 # Check if the user has deselected the smart meter device
-                if not selected_smd:
-                    selected_smd = TRANSLATION_NONE
+                if selected_smd in ("", TRANSLATION_NONE, None):
+                    selected_smd = None
 
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
 
                 # Get selected entities from the existing rooms
-                selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
+                selected_entities = get_selected_entities_for_rooms(
+                    self.hass,
+                    selected_existing_rooms,
+                    integration_entities,
+                    selected_entities,
+                    current_entity_type,
+                )
+                if selected_smd and selected_smd in selected_entities:
+                    selected_entities.remove(selected_smd)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
@@ -460,15 +514,34 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             smart_meter_options.insert(0, old_entities_smd)
             _LOGGER.debug(f"smart_meter_options entities: {smart_meter_options}")
 
-        sorted_options = sorted(smart_meter_options)
+        sorted_options = sorted(set(smart_meter_options))
         sorted_options.insert(0, TRANSLATION_NONE)
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
-        default_smart_meter_device = old_entities_smd if old_entities_smd else TRANSLATION_NONE
+        if old_entities_smd in ("", TRANSLATION_NONE, None):
+            default_smart_meter_device = TRANSLATION_NONE
+        else:
+            default_smart_meter_device = old_entities_smd
+        smart_meter_option_list = build_entity_options(
+            self.hass,
+            [option for option in sorted_options if option != TRANSLATION_NONE]
+        )
+        smart_meter_option_list.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        smart_meter_option_list = list({option["value"]: option for option in smart_meter_option_list}.values())
+        if old_entities_smd and old_entities_smd != TRANSLATION_NONE and old_entities_smd in combined_entities:
+            combined_entities = [entity for entity in combined_entities if entity != old_entities_smd]
+        integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): vol.In(sorted_options),
-            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=smart_meter_option_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN
+                )
+            ),
+            vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, combined_entities))
+            ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="user", data_schema=options_schema, errors=errors)
