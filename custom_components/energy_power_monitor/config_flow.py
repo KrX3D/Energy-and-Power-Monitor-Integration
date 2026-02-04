@@ -32,6 +32,15 @@ def build_select_options_from_map(entity_map):
     """Build select options from a mapping of entity_id -> friendly_name."""
     return [{"value": entity_id, "label": friendly_name} for entity_id, friendly_name in entity_map.items()]
 
+def build_entity_label_map(hass, entity_ids):
+    """Build a mapping of entity_id -> friendly label."""
+    label_map = {}
+    for entity_id in entity_ids:
+        state = hass.states.get(entity_id)
+        label = state.attributes.get("friendly_name", entity_id) if state else entity_id
+        label_map[entity_id] = label
+    return label_map
+
 def get_filtered_entities_for_room(hass, room_id):
     """Retrieve the filtered entities for a specific room."""
     _LOGGER.debug(f"get_filtered_entities_for_room function start")
@@ -243,17 +252,19 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
         entity_options = build_entity_options(self.hass, sorted(filtered_entities))
         smart_meter_options = list(entity_options)
-        smart_meter_options.insert(0, {"value": "", "label": TRANSLATION_NONE})
+        smart_meter_options.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
+            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_options,
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(dict(entity_options))),
+            vol.Optional(CONF_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, filtered_entities))
+            ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="select_entities", data_schema=data_schema, errors=errors)
@@ -486,17 +497,18 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
         if old_entities_smd == TRANSLATION_NONE:
-            default_smart_meter_device = ""
+            default_smart_meter_device = TRANSLATION_NONE
         elif old_entities_smd:
             default_smart_meter_device = old_entities_smd
         else:
-            default_smart_meter_device = ""
+            default_smart_meter_device = TRANSLATION_NONE
         smart_meter_option_list = build_entity_options(
             self.hass,
             [option for option in sorted_options if option != TRANSLATION_NONE]
         )
-        smart_meter_option_list.insert(0, {"value": "", "label": TRANSLATION_NONE})
-        entity_option_list = build_entity_options(self.hass, combined_entities)
+        smart_meter_option_list.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        if old_entities_smd and old_entities_smd != TRANSLATION_NONE and old_entities_smd in combined_entities:
+            combined_entities = [entity for entity in combined_entities if entity != old_entities_smd]
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
@@ -507,7 +519,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 )
             ),
             vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(
-                cv.multi_select(dict(build_entity_options(self.hass, combined_entities)))
+                cv.multi_select(build_entity_label_map(self.hass, combined_entities))
             ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
