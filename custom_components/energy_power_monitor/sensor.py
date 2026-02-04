@@ -177,7 +177,8 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Initialize the Energy and Power Monitor sensor."""
         self.hass = hass
         self._room_name = room_name
-        self._entities = entities
+        self._base_entities = list(entities)
+        self._entities = list(entities)
         self._state = 0
         self._entry_id = entry_id
         self._entity_type = entity_type  # Power or Energy type
@@ -195,6 +196,8 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             return self._entities
         base_entities = entry.data.get(CONF_ENTITIES, [])
         integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+        self._base_entities = list(base_entities)
+        self.async_write_ha_state()
         return expand_integration_room_entities(
             self.hass,
             base_entities,
@@ -240,7 +243,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return additional attributes of the sensor."""
-        return {"selected_entities": self._entities}
+        return {"selected_entities": self._base_entities}
 
     @property
     def icon(self):
