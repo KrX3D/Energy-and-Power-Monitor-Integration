@@ -126,7 +126,7 @@ async def get_translated_none(hass):
     _LOGGER.debug(f"Translated 'None': {translated_none}")
     return translated_none
 
-def get_selected_smart_meter_devices(hass, filtered_entities):
+def get_selected_smart_meter_devices(hass, filtered_entities, translated_none=None):
     """Retrieve the selected smart meter devices from filtered entities."""
     _LOGGER.debug("get_selected_smart_meter_devices function start")
     # Filter entities that start with 'sensor.energy_power_monitor'
@@ -140,7 +140,7 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
             selected_smart_meter_devices.add(selected_device)
     for entry in hass.config_entries.async_entries(DOMAIN):
         selected_device = entry.data.get(CONF_SMART_METER_DEVICE)
-        if selected_device:
+        if selected_device and selected_device not in ("", translated_none):
             selected_smart_meter_devices.add(selected_device)
     _LOGGER.debug(f"Already created Smart Meter Devices: {old_entities_smd_untracked}")
     _LOGGER.debug(f"Selected smart meter devices: {selected_smart_meter_devices}")
@@ -151,9 +151,9 @@ def normalize_smart_meter_selection(user_input, translated_none):
     if CONF_SMART_METER_DEVICE in user_input:
         selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
     else:
-        selected_smd = None
+        selected_smd = translated_none
     if selected_smd in ("", translated_none, None):
-        return None
+        return translated_none
     return selected_smd
 
 def remove_smart_meter_from_entities(selected_smd, selected_entities):
@@ -235,7 +235,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             filtered_entities = [entity for entity in all_entities if entity.endswith('_power')]
         else:
             filtered_entities = [entity for entity in all_entities if entity.endswith('_energy')]
-        selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities)
+        selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities, TRANSLATION_NONE)
         # Remove entities that start with 'sensor.energy_power_monitor'
         filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
         existing_entities_in_zones = set()
@@ -501,7 +501,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             filtered_entities = [entity for entity in all_entities if entity.endswith('_energy')]
         else:
             filtered_entities = [entity for entity in all_entities if entity.endswith('_power') or entity.endswith('_energy')]
-        selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities)
+        selected_smart_meter_devices = get_selected_smart_meter_devices(self.hass, filtered_entities, TRANSLATION_NONE)
 
         filtered_entities = [entity for entity in filtered_entities if not entity.startswith(f'sensor.{DOMAIN}')]
         existing_zones_for_gui = {friendly_name: entity_id for entity_id, friendly_name in existing_zones.items()}
