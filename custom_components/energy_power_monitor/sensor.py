@@ -213,11 +213,6 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         return False
 
     @property
-    def should_poll(self):
-        """Disable polling; rely on state change listeners."""
-        return False
-
-    @property
     def state(self):
         """Return the current state of the sensor."""
         return self._state
@@ -395,11 +390,6 @@ class SmartMeterSensor(SensorEntity):
     def name(self):
         """Return the name of the Smart Meter sensor."""
         return f"{self._zone_name} untracked - {self._entity_type.capitalize()}"
-
-    @property
-    def should_poll(self):
-        """Disable polling; rely on state change listeners."""
-        return False
 
     @property
     def should_poll(self):

@@ -71,6 +71,28 @@ HOUSE
     └── Fan
 ```
 
+## Deep Hierarchy Example (5 Levels)
+
+```
+HOUSE
+├── Floor 1
+│   ├── Living Room
+│   │   ├── Corner
+│   │   │   ├── Plug Window
+│   │   │   └── Plug Table
+│   │   └── TV Area
+│   │       └── TV Plug
+│   └── Kitchen
+│       ├── Counter
+│       │   └── Device 1
+│       └── Fridge
+│           └── Device 2
+└── Floor 2
+    └── Bedroom
+        └── Desk
+            └── Laptop Plug
+```
+
 ### Example: A Whole‑House Summary
 1. Create *Living Room*, *Kitchen*, and *Bathroom* zones with their own entities.
 2. Create a new zone called *House*.
@@ -112,6 +134,32 @@ When you add a zone, the integration creates:
 - **Untracked sensor** (optional, if smart meter is selected)
   - Shows the difference between the smart meter and the tracked entities.
   - Example: `sensor.energy_power_monitor_living_room_untracked_power`
+
+---
+
+## Entity states & attributes (for card developers)
+
+### Zone sensor
+**Entity ID pattern**
+- `sensor.energy_power_monitor_<zone_name>_<power|energy>`
+
+**State**
+- The sum of all selected entities (power in W or energy in kWh).
+
+**Attributes**
+- `selected_entities`: List of entity IDs selected for the zone.
+
+### Untracked (smart meter) sensor
+**Entity ID pattern**
+- `sensor.energy_power_monitor_<zone_name>_untracked_<power|energy>`
+
+**State**
+- `smart_meter_value - sum_of_selected_entities`
+- Clamped to `0` when negative.
+
+**Attributes**
+- `Selected Smart Meter Device`: The smart meter entity ID used for the calculation.
+- `Energy and Power Monitor`: The zone sensor entity ID.
 
 ---
 
