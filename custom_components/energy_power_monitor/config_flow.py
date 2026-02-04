@@ -37,8 +37,11 @@ def build_entity_label_map(hass, entity_ids):
     label_map = {}
     for entity_id in entity_ids:
         state = hass.states.get(entity_id)
-        label = state.attributes.get("friendly_name", entity_id) if state else entity_id
-        label_map[entity_id] = label
+        if state:
+            friendly_name = state.attributes.get("friendly_name", entity_id)
+            label_map[entity_id] = f"{friendly_name} - {entity_id}"
+        else:
+            label_map[entity_id] = entity_id
     return label_map
 
 def get_filtered_entities_for_room(hass, room_id):
@@ -251,7 +254,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
         entity_options = build_entity_options(self.hass, sorted(filtered_entities))
-        smart_meter_options = list(entity_options)
+        smart_meter_option_values = {option["value"] for option in entity_options}
+        smart_meter_options = list({option["value"]: option for option in entity_options}.values())
         smart_meter_options.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
@@ -468,6 +472,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         selected_integration_rooms = [existing_rooms_for_gui[name] for name in filtered_old_integration_rooms if name in existing_rooms_for_gui]
         _LOGGER.debug(f"Filtered selected_integration_rooms: {selected_integration_rooms}")
         assigned_integration_rooms = get_selected_integration_rooms(self.hass, existing_rooms)
+        existing_rooms.pop(entity_id, None)
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
         for entity_id in selected_integration_rooms:
             if entity_id in existing_rooms:
@@ -492,7 +497,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             smart_meter_options.insert(0, old_entities_smd)
             _LOGGER.debug(f"smart_meter_options entities: {smart_meter_options}")
 
-        sorted_options = sorted(smart_meter_options)
+        sorted_options = sorted(set(smart_meter_options))
         sorted_options.insert(0, TRANSLATION_NONE)
         _LOGGER.debug(f"sorted_options entities: {sorted_options}")
         
@@ -507,6 +512,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             [option for option in sorted_options if option != TRANSLATION_NONE]
         )
         smart_meter_option_list.insert(0, {"value": TRANSLATION_NONE, "label": TRANSLATION_NONE})
+        smart_meter_option_list = list({option["value"]: option for option in smart_meter_option_list}.values())
         if old_entities_smd and old_entities_smd != TRANSLATION_NONE and old_entities_smd in combined_entities:
             combined_entities = [entity for entity in combined_entities if entity != old_entities_smd]
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
