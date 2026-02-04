@@ -247,13 +247,13 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Required(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
+            vol.Optional(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_options,
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(filtered_entities)),
+            vol.Optional(CONF_ENTITIES, default=[]): vol.All(cv.multi_select(dict(entity_options))),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="select_entities", data_schema=data_schema, errors=errors)
@@ -500,13 +500,15 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Required(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
+            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_option_list,
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(
+                cv.multi_select(dict(build_entity_options(self.hass, combined_entities)))
+            ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="user", data_schema=options_schema, errors=errors)
