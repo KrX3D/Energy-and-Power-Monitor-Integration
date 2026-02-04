@@ -1,5 +1,6 @@
 import logging
 import unicodedata
+from datetime import timedelta
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy, STATE_UNKNOWN, STATE_UNAVAILABLE
@@ -15,7 +16,7 @@ from .const import (
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.helpers.event import async_call_later, async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event, async_track_time_interval
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -89,20 +90,23 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
-        if entry.entry_id not in reload_scheduled_entries:
-            reload_scheduled_entries.add(entry.entry_id)
+    async def reload_integration_periodically(now):
+        """Reload the integration every 5 minutes."""
+        _LOGGER.debug("Reloading the integration automatically after 5 minutes.")
+        await hass.config_entries.async_reload(entry.entry_id)
 
-            async def _reload_entry(_now):
-                await hass.config_entries.async_reload(entry.entry_id)
-
-            async_call_later(hass, 5, _reload_entry)
+    async def start_periodic_reload(event):
+        """Start the periodic reloader."""
+        async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
 
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
+        await start_periodic_reload(None)
     else:
         # Otherwise, listen for the start event
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, check_and_setup_entities)
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, start_periodic_reload)
 
 
 def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
@@ -403,7 +407,7 @@ class SmartMeterSensor(SensorEntity):
     @property
     def state(self):
         """Return the state of the Smart Meter sensor."""
-        return self._state
+        return self._calculate_state()
 
     @property
     def unique_id(self):
