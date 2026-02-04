@@ -383,7 +383,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+                selected_smd = user_input.get(CONF_SMART_METER_DEVICE, "")
                 # Check if the user has deselected the smart meter device
                 if selected_smd in ("", TRANSLATION_NONE, None):
                     selected_smd = None
