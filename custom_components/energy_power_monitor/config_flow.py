@@ -222,6 +222,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             selected_entities = user_input.get(CONF_ENTITIES, [])
             selected_existing_rooms = user_input.get(CONF_INTEGRATION_ROOMS, [])
+            # Get selected entities from the existing rooms
             selected_entities = get_selected_entities_for_rooms(
                 self.hass,
                 selected_existing_rooms,
@@ -392,6 +393,14 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
 
+                # Get selected entities from the existing rooms
+                selected_entities = get_selected_entities_for_rooms(
+                    self.hass,
+                    selected_existing_rooms,
+                    integration_entities,
+                    selected_entities,
+                    current_entity_type,
+                )
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
