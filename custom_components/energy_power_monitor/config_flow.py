@@ -138,6 +138,10 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
         if state and 'Selected Smart Meter Device' in state.attributes:
             selected_device = state.attributes['Selected Smart Meter Device']
             selected_smart_meter_devices.add(selected_device)
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        selected_device = entry.data.get(CONF_SMART_METER_DEVICE)
+        if selected_device:
+            selected_smart_meter_devices.add(selected_device)
     _LOGGER.debug(f"Already created Smart Meter Devices: {old_entities_smd_untracked}")
     _LOGGER.debug(f"Selected smart meter devices: {selected_smart_meter_devices}")
     return selected_smart_meter_devices

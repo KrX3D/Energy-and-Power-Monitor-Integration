@@ -97,7 +97,15 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     async def start_periodic_reload(event):
         """Start the periodic reloader."""
-        async_track_time_interval(hass, reload_integration_periodically, timedelta(minutes=5))
+        reload_registry = hass.data.setdefault(f"{DOMAIN}_reload_unsub", {})
+        if entry.entry_id in reload_registry:
+            return
+        reload_registry[entry.entry_id] = async_track_time_interval(
+            hass,
+            reload_integration_periodically,
+            timedelta(minutes=5),
+        )
+        entry.async_on_unload(reload_registry[entry.entry_id])
 
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
@@ -324,13 +332,13 @@ class EnergyandPowerMonitorSensor(SensorEntity):
                 self._entities = expanded_entities
             self.async_on_remove(entry.add_update_listener(self._update_listener))
 
-        # Set up state listeners for real-time updates
-        self._setup_state_listeners()
+            # Set up state listeners for real-time updates
+            self._setup_state_listeners()
 
-        # Perform initial calculation
-        self._state = self._calculate_state()
+            # Perform initial calculation
+            self._state = self._calculate_state()
 
-        await super().async_added_to_hass()
+            await super().async_added_to_hass()
 
     async def _update_listener(self, hass, entry):
         """Update listener: re-read configuration and update state."""
@@ -347,6 +355,10 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Clean up when entity is removed."""
         if self._unsubscribe_state_changes:
             self._unsubscribe_state_changes()
+
+        reload_registry = self.hass.data.get(f"{DOMAIN}_reload_unsub", {})
+        if self._entry_id in reload_registry:
+            reload_registry.pop(self._entry_id, None)
 
 
 class SmartMeterSensor(SensorEntity):
