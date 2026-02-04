@@ -146,6 +146,22 @@ def get_selected_smart_meter_devices(hass, filtered_entities):
     _LOGGER.debug(f"Selected smart meter devices: {selected_smart_meter_devices}")
     return selected_smart_meter_devices
 
+def normalize_smart_meter_selection(user_input, translated_none):
+    """Normalize smart meter selection from user input."""
+    if CONF_SMART_METER_DEVICE in user_input:
+        selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
+    else:
+        selected_smd = None
+    if selected_smd in ("", translated_none, None):
+        return None
+    return selected_smd
+
+def remove_smart_meter_from_entities(selected_smd, selected_entities):
+    """Remove smart meter entity from selected entities if present."""
+    if selected_smd and selected_smd in selected_entities:
+        selected_entities.remove(selected_smd)
+    return selected_entities
+
 # Get all Integration zones that were already selected and assigned to a zone
 def get_selected_integration_zones(hass, existing_zones):
     """Retrieve the selected smart meter devices from filtered entities."""
@@ -170,6 +186,15 @@ def get_selected_integration_zones(hass, existing_zones):
     sorted_filtered_entities = dict(sorted(filtered_entities_with_friendly_name.items(), key=lambda item: item[1]))
     #_LOGGER.debug(f"Sorted filtered entities with friendly names: {sorted_filtered_entities}")
     return sorted_filtered_entities
+
+def build_existing_zones_for_gui(integration_entities):
+    """Build existing zones mapping for GUI selections."""
+    existing_zones = {
+        entity_id: friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
+        for entity_id, friendly_name in integration_entities.items()
+    }
+    existing_zones = dict(sorted(existing_zones.items(), key=lambda item: item[1]))
+    return existing_zones
 
 @config_entries.HANDLERS.register(DOMAIN)
 class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -238,17 +263,10 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 selected_entities,
                 self.selected_type,
             )
-            if CONF_SMART_METER_DEVICE in user_input:
-                selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
-            else:
-                selected_smd = None
+            selected_smd = normalize_smart_meter_selection(user_input, TRANSLATION_NONE)
             _LOGGER.info(f"selected_smd before: {selected_smd}")
-            # If the field is cleared, store None so tracking is disabled.
-            if selected_smd in ("", TRANSLATION_NONE, None):
-                selected_smd = None
             _LOGGER.info(f"selected_smd after: {selected_smd}")
-            if selected_smd and selected_smd in selected_entities:
-                selected_entities.remove(selected_smd)
+            selected_entities = remove_smart_meter_from_entities(selected_smd, selected_entities)
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
             _LOGGER.info(f"Selected entities: {selected_entities}")
             _LOGGER.info(f"Entity type: {translated_entity_type}")
@@ -262,9 +280,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_INTEGRATION_ROOMS: selected_existing_zones
                 }
             )
-        existing_zones = {entity_id: friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
-                          for entity_id, friendly_name in integration_entities.items()}
-        existing_zones = dict(sorted(existing_zones.items(), key=lambda item: item[1]))
+        existing_zones = build_existing_zones_for_gui(integration_entities)
         _LOGGER.info(f"Existing zones with friendly names: {existing_zones}")
         assigned_integration_zones = get_selected_integration_zones(self.hass, existing_zones)
         # Remove zones already assigned
@@ -399,13 +415,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 # Retrieve new configuration
                 selected_entities = user_input.get(CONF_ENTITIES, [])
                 selected_existing_zones = user_input.get(CONF_INTEGRATION_ROOMS, [])
-                if CONF_SMART_METER_DEVICE in user_input:
-                    selected_smd = user_input.get(CONF_SMART_METER_DEVICE)
-                else:
-                    selected_smd = None
-                # Check if the user has deselected the smart meter device
-                if selected_smd in ("", TRANSLATION_NONE, None):
-                    selected_smd = None
+                selected_smd = normalize_smart_meter_selection(user_input, TRANSLATION_NONE)
 
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
 
@@ -417,8 +427,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     selected_entities,
                     current_entity_type,
                 )
-                if selected_smd and selected_smd in selected_entities:
-                    selected_entities.remove(selected_smd)
+                selected_entities = remove_smart_meter_from_entities(selected_smd, selected_entities)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
@@ -437,9 +446,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             except Exception as ex:
                 _LOGGER.exception("Unexpected exception during options update: %s", ex)
                 errors["base"] = "unknown"
-        existing_zones = {entity_id: friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
-                          for entity_id, friendly_name in integration_entities.items()}
-        existing_zones = dict(sorted(existing_zones.items(), key=lambda item: item[1]))  # Sort by friendly name
+        existing_zones = build_existing_zones_for_gui(integration_entities)  # Sort by friendly name
         _LOGGER.info(f"Existing zones with friendly names: {existing_zones}")
 
         # Remove the currently configured zone from the options
