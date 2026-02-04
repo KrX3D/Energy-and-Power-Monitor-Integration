@@ -246,7 +246,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
+            vol.Required(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_options,
                     mode=selector.SelectSelectorMode.DROPDOWN
@@ -499,7 +499,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_room): cv.string,
-            vol.Optional(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
+            vol.Required(CONF_SMART_METER_DEVICE, default=default_smart_meter_device): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_option_list,
                     mode=selector.SelectSelectorMode.DROPDOWN
