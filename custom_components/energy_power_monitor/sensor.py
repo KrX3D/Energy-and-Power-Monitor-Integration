@@ -1,12 +1,21 @@
 import logging
+import unicodedata
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy, STATE_UNKNOWN, STATE_UNAVAILABLE
-from .const import DOMAIN, ENTITY_TYPE_POWER, ENTITY_TYPE_ENERGY, CONF_SMART_METER_DEVICE, CONF_ENTITIES
+from homeassistant.helpers import entity_registry as er
+from .const import (
+    DOMAIN,
+    ENTITY_TYPE_POWER,
+    ENTITY_TYPE_ENERGY,
+    CONF_SMART_METER_DEVICE,
+    CONF_ENTITIES,
+    CONF_INTEGRATION_ROOMS,
+)
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -28,6 +37,7 @@ async def get_translated_none(hass: HomeAssistant):
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
+    reload_scheduled_entries = hass.data.setdefault(f"{DOMAIN}_reload_scheduled_entries", set())
 
     async def check_and_setup_entities(event=None):  # Set event=None to make it optional
         """Check for and remove non-existent entities when Home Assistant is fully started."""
@@ -42,14 +52,23 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         room_name = entry.data.get('room')
         entities = entry.data.get(CONF_ENTITIES)
         entity_type = entry.data.get('entity_type')
+        integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
         smart_meter_device = entry.data.get(CONF_SMART_METER_DEVICE, TRANSLATION_NONE)
 
-        entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
-        if set(entities_checked) != set(entities):
+        expanded_entities = expand_integration_room_entities(
+            hass,
+            entities,
+            integration_rooms,
+            entity_type,
+        )
+        base_entities_checked = check_and_remove_nonexistent_entities(hass, entities, entry)
+        if set(base_entities_checked) != set(entities):
             new_data = entry.data.copy()
-            new_data[CONF_ENTITIES] = entities_checked
+            new_data[CONF_ENTITIES] = base_entities_checked
             hass.config_entries.async_update_entry(entry, data=new_data)
             _LOGGER.debug("Config entry updated with valid entities.")
+
+        entities_checked = check_and_remove_nonexistent_entities(hass, expanded_entities, entry)
 
         _LOGGER.debug(
             f"Setting up Energy and Power Monitor sensor: room_name={room_name}, "
@@ -70,6 +89,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             smart_meter_sensor = SmartMeterSensor(hass, room_name, smart_meter_device, entry.entry_id, entity_type, sensor)
             async_add_entities([smart_meter_sensor])
 
+        if entry.entry_id not in reload_scheduled_entries:
+            reload_scheduled_entries.add(entry.entry_id)
+
+            async def _reload_entry(_now):
+                await hass.config_entries.async_reload(entry.entry_id)
+
+            async_call_later(hass, 5, _reload_entry)
+
     # If Home Assistant is already running, call check_and_setup_entities immediately
     if hass.is_running:
         await check_and_setup_entities()
@@ -81,15 +108,53 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 def check_and_remove_nonexistent_entities(hass: HomeAssistant, entities, entry):
     """Check if selected entities still exist, and remove those that don't."""
     _LOGGER.debug("Executing function check_and_remove_nonexistent_entities")
+    entity_registry = er.async_get(hass)
     valid_entities = []
     for entity_id in entities:
-        if hass.states.get(entity_id):
+        if entity_id in entity_registry.entities:
             #_LOGGER.debug(f"Entity does exist, entity_id:  {entity_id}")
             valid_entities.append(entity_id)  # Keep the entity if it exists
         else:
             _LOGGER.warning(f"Entity {entity_id} no longer exists. It is being removed automatically.")
     _LOGGER.debug(f"Valid entities after check: {valid_entities}")
     return valid_entities
+
+
+def expand_integration_room_entities(hass: HomeAssistant, entities, integration_rooms, entity_type):
+    """Expand selected integration rooms into their tracked entities."""
+    if not integration_rooms:
+        return entities or []
+
+    entry_entities = {}
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        room_name = entry.data.get("room")
+        entry_entity_type = entry.data.get("entity_type")
+        if not room_name or not entry_entity_type:
+            continue
+        normalized_name = unicodedata.normalize("NFKD", room_name).encode("ascii", "ignore").decode("utf-8")
+        sanitized_room_name = normalized_name.replace(" ", "_").replace("-", "_").lower()
+        entry_entity_id = f"sensor.{DOMAIN}_{sanitized_room_name}_{entry_entity_type}"
+        entry_entities[entry_entity_id] = entry.data.get(CONF_ENTITIES, [])
+
+    entity_registry = er.async_get(hass)
+    selected_entities = list(entities or [])
+    all_sensors = [entity_id for entity_id in entity_registry.entities if entity_id.startswith("sensor.")]
+    for room_id in integration_rooms:
+        if room_id in entry_entities:
+            selected_entities.extend(entry_entities[room_id])
+        room_state = hass.states.get(room_id)
+        if room_state:
+            selected_from_room = room_state.attributes.get("selected_entities", [])
+            if selected_from_room:
+                selected_entities.extend(selected_from_room)
+        room_entities = [entity for entity in all_sensors if entity.startswith(room_id)]
+        if room_entities:
+            selected_entities.extend(room_entities)
+        untracked_entity = f"{room_id[:-(len(entity_type) + 1)]}_untracked_{entity_type}"
+        if untracked_entity in entity_registry.entities:
+            selected_entities.append(untracked_entity)
+
+    return sorted(set(selected_entities))
 
 
 def is_valid_value(state_obj):
@@ -112,7 +177,8 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Initialize the Energy and Power Monitor sensor."""
         self.hass = hass
         self._room_name = room_name
-        self._entities = entities
+        self._base_entities = list(entities)
+        self._entities = list(entities)
         self._state = 0
         self._entry_id = entry_id
         self._entity_type = entity_type  # Power or Energy type
@@ -124,6 +190,21 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             f"entity_type: {self._entity_type}"
         )
 
+    def _get_expanded_entities(self, entry):
+        """Return expanded entities including included zones."""
+        if not entry:
+            return self._entities
+        base_entities = entry.data.get(CONF_ENTITIES, [])
+        integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+        self._base_entities = list(base_entities)
+        self.async_write_ha_state()
+        return expand_integration_room_entities(
+            self.hass,
+            base_entities,
+            integration_rooms,
+            self._entity_type,
+        )
+
     def generate_unique_id(self):
         """Generate a unique ID for the sensor."""
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
@@ -133,6 +214,11 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     def name(self):
         """Return the name of the sensor."""
         return f"{self._room_name} selected entities - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def state(self):
@@ -157,7 +243,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return additional attributes of the sensor."""
-        return {"selected_entities": self._entities}
+        return {"selected_entities": self._base_entities}
 
     @property
     def icon(self):
@@ -212,7 +298,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Update state by recalculating from selected entities."""
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
-            new_entities = entry.data.get(CONF_ENTITIES, [])
+            new_entities = self._get_expanded_entities(entry)
             if new_entities != self._entities:
                 _LOGGER.debug(
                     f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}"
@@ -249,6 +335,9 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Called when entity is added to Home Assistant."""
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
+            expanded_entities = self._get_expanded_entities(entry)
+            if expanded_entities != self._entities:
+                self._entities = expanded_entities
             self.async_on_remove(entry.add_update_listener(self._update_listener))
 
         # Set up state listeners for real-time updates
@@ -261,7 +350,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 
     async def _update_listener(self, hass, entry):
         """Update listener: re-read configuration and update state."""
-        new_entities = entry.data.get(CONF_ENTITIES, [])
+        new_entities = self._get_expanded_entities(entry)
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
@@ -305,6 +394,11 @@ class SmartMeterSensor(SensorEntity):
     def name(self):
         """Return the name of the Smart Meter sensor."""
         return f"{self._room_name} untracked - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def state(self):
