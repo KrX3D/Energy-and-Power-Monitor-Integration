@@ -38,6 +38,7 @@ async def get_translated_none(hass: HomeAssistant):
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
+    reload_scheduled_entries = hass.data.setdefault(f"{DOMAIN}_reload_scheduled_entries", set())
 
     async def check_and_setup_entities(event=None):  # Set event=None to make it optional
         """Check for and remove non-existent entities when Home Assistant is fully started."""
