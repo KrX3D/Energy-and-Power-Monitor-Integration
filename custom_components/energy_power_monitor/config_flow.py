@@ -248,7 +248,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         integration_room_options = build_select_options_from_map(filtered_existing_rooms)
         # Note: Real-time dynamic updating of one dropdown based on another's selection is not supported.
         data_schema = vol.Schema({
-            vol.Optional(CONF_SMART_METER_DEVICE, default=TRANSLATION_NONE): selector.SelectSelector(
+            vol.Optional(CONF_SMART_METER_DEVICE, default=""): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_options,
                     mode=selector.SelectSelectorMode.DROPDOWN
@@ -412,8 +412,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Filter the old entities (already selected)
         filtered_old_entities = set(entity for entity in old_entities if not entity.startswith(f'sensor.{DOMAIN}'))
+        old_integration_entities = set(entity for entity in old_entities if entity.startswith(f'sensor.{DOMAIN}'))
         _LOGGER.debug(f"Old entities: {old_entities}")
         _LOGGER.debug(f"Old filtered entities: {filtered_old_entities}")
+        _LOGGER.debug(f"Old integration entities: {old_integration_entities}")
 
         # Detailed logging for the filtering operation
         filtered_old_integration_rooms = []
@@ -459,6 +461,9 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(f"Filtered selected_integration_rooms: {selected_integration_rooms}")
         assigned_integration_rooms = get_selected_integration_rooms(self.hass, existing_rooms)
         filtered_existing_rooms = {entity_id: friendly_name for entity_id, friendly_name in existing_rooms.items() if entity_id not in assigned_integration_rooms}
+        for entity_id in selected_integration_rooms:
+            if entity_id in existing_rooms:
+                filtered_existing_rooms.setdefault(entity_id, existing_rooms[entity_id])
         _LOGGER.info(f"Filtered existing rooms (excluding assigned integration rooms): {filtered_existing_rooms}")
         existing_entities_in_rooms = set()
 
@@ -470,7 +475,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         filtered_entities = sorted([entity for entity in filtered_entities if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices])
         filtered_entities = sorted(set(filtered_entities))
-        combined_entities = sorted(filtered_old_entities.union(filtered_entities))
+        combined_entities = sorted(filtered_entities.union(filtered_old_entities).union(old_integration_entities))
         _LOGGER.debug(f"Combined entities: {combined_entities}")
 
         smart_meter_options = sorted(filtered_entities)
@@ -485,8 +490,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         if old_entities_smd == TRANSLATION_NONE:
             default_smart_meter_device = ""
+        elif old_entities_smd:
+            default_smart_meter_device = old_entities_smd
         else:
-            default_smart_meter_device = old_entities_smd if old_entities_smd else ""
+            default_smart_meter_device = ""
         smart_meter_option_list = build_entity_options(
             self.hass,
             [option for option in sorted_options if option != TRANSLATION_NONE]
@@ -502,7 +509,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     mode=selector.SelectSelectorMode.DROPDOWN
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=list(filtered_old_entities)): vol.All(cv.multi_select(combined_entities)),
+            vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(cv.multi_select(combined_entities)),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_rooms): vol.All(cv.multi_select(filtered_existing_rooms))
         })
         return self.async_show_form(step_id="user", data_schema=options_schema, errors=errors)
