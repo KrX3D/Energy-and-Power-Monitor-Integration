@@ -236,6 +236,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if selected_smd in ("", TRANSLATION_NONE, None):
                 selected_smd = None
             _LOGGER.info(f"selected_smd after: {selected_smd}")
+            if selected_smd and selected_smd in selected_entities:
+                selected_entities.remove(selected_smd)
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
             _LOGGER.info(f"Selected entities: {selected_entities}")
             _LOGGER.info(f"Entity type: {translated_entity_type}")
@@ -401,6 +403,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     selected_entities,
                     current_entity_type,
                 )
+                if selected_smd and selected_smd in selected_entities:
+                    selected_entities.remove(selected_smd)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
