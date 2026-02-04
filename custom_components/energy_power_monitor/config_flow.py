@@ -155,11 +155,13 @@ def get_selected_integration_zones(hass, existing_zones):
         # Get the entity's state object from Home Assistant
         entity_state = hass.states.get(entity_id)
         if entity_state:
-            selected_entities = entity_state.attributes.get('selected_entities', [])
-            # Filter entities that start with 'sensor.energy_power_monitor' and do not end with '_untracked_'
+            selected_entities = entity_state.attributes.get("selected_entities", [])
             for entity in selected_entities:
-                if entity.startswith(f'sensor.{DOMAIN}') and not entity.endswith(('_untracked_power', '_untracked_energy')):
-                    friendly_name = hass.states.get(entity).attributes.get('friendly_name', entity)
+                if entity.startswith(f"sensor.{DOMAIN}") and not entity.endswith(("_untracked_power", "_untracked_energy")):
+                    selected_state = hass.states.get(entity)
+                    if not selected_state:
+                        continue
+                    friendly_name = selected_state.attributes.get("friendly_name", entity)
                     friendly_name = friendly_name.replace(" selected entities - Power", "").replace(" selected entities - Energy", "")
                     filtered_entities_with_friendly_name[entity] = friendly_name
             #_LOGGER.info(f"Zone: {entity_id} - Filtered entities: {filtered_entities_with_friendly_name}")
@@ -451,8 +453,10 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Filter the old entities (already selected)
         filtered_old_entities = set(entity for entity in old_entities if not entity.startswith(f'sensor.{DOMAIN}'))
+        old_integration_entities = set(entity for entity in old_entities if entity.startswith(f'sensor.{DOMAIN}'))
         _LOGGER.debug(f"Old entities: {old_entities}")
         _LOGGER.debug(f"Old filtered entities: {filtered_old_entities}")
+        _LOGGER.debug(f"Old integration entities: {old_integration_entities}")
 
         # Detailed logging for the filtering operation
         filtered_old_integration_zones = []
@@ -509,7 +513,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         filtered_entities = sorted([entity for entity in filtered_entities if entity not in existing_entities_in_zones and entity not in selected_smart_meter_devices])
         filtered_entities = sorted(set(filtered_entities))
-        combined_entities = sorted(filtered_old_entities.union(filtered_entities))
+        combined_entities = sorted(set(filtered_entities).union(filtered_old_entities).union(old_integration_entities))
         _LOGGER.debug(f"Combined entities: {combined_entities}")
 
         smart_meter_options = sorted(filtered_entities)

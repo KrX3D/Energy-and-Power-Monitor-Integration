@@ -38,6 +38,7 @@ async def get_translated_none(hass: HomeAssistant):
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the Energy and Power Monitor sensor based on a config entry."""
     _LOGGER.debug("async_setup_entry function start...")
+    reload_scheduled_entries = hass.data.setdefault(f"{DOMAIN}_reload_scheduled_entries", set())
 
     async def check_and_setup_entities(event=None):  # Set event=None to make it optional
         """Check for and remove non-existent entities when Home Assistant is fully started."""
@@ -205,6 +206,11 @@ class EnergyandPowerMonitorSensor(SensorEntity):
     def name(self):
         """Return the name of the sensor."""
         return f"{self._zone_name} selected entities - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def should_poll(self):
@@ -389,6 +395,11 @@ class SmartMeterSensor(SensorEntity):
     def name(self):
         """Return the name of the Smart Meter sensor."""
         return f"{self._zone_name} untracked - {self._entity_type.capitalize()}"
+
+    @property
+    def should_poll(self):
+        """Disable polling; rely on state change listeners."""
+        return False
 
     @property
     def should_poll(self):
