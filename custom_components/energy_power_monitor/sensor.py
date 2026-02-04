@@ -189,6 +189,19 @@ class EnergyandPowerMonitorSensor(SensorEntity):
             f"entity_type: {self._entity_type}"
         )
 
+    def _get_expanded_entities(self, entry):
+        """Return expanded entities including included zones."""
+        if not entry:
+            return self._entities
+        base_entities = entry.data.get(CONF_ENTITIES, [])
+        integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+        return expand_integration_room_entities(
+            self.hass,
+            base_entities,
+            integration_rooms,
+            self._entity_type,
+        )
+
     def generate_unique_id(self):
         """Generate a unique ID for the sensor."""
         sanitized_room_name = self._room_name.lower().replace(' ', '_')
@@ -282,7 +295,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Update state by recalculating from selected entities."""
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
-            new_entities = entry.data.get(CONF_ENTITIES, [])
+            new_entities = self._get_expanded_entities(entry)
             if new_entities != self._entities:
                 _LOGGER.debug(
                     f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}"
@@ -319,6 +332,9 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         """Called when entity is added to Home Assistant."""
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry:
+            expanded_entities = self._get_expanded_entities(entry)
+            if expanded_entities != self._entities:
+                self._entities = expanded_entities
             self.async_on_remove(entry.add_update_listener(self._update_listener))
 
         # Set up state listeners for real-time updates
@@ -331,7 +347,7 @@ class EnergyandPowerMonitorSensor(SensorEntity):
 
     async def _update_listener(self, hass, entry):
         """Update listener: re-read configuration and update state."""
-        new_entities = entry.data.get(CONF_ENTITIES, [])
+        new_entities = self._get_expanded_entities(entry)
         if new_entities != self._entities:
             _LOGGER.debug(f"{self._room_name} sensor: updating entities from {self._entities} to {new_entities}")
             self._entities = new_entities
