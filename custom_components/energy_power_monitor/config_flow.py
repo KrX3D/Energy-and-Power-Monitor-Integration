@@ -209,6 +209,8 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for entry in current_entries:
             entities = entry.data.get(CONF_ENTITIES, [])
             existing_entities_in_rooms.update(entities)
+            integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+            existing_entities_in_rooms.update(integration_rooms)
         _LOGGER.debug(f"Already picked entities: {existing_entities_in_rooms}")
         # Exclude entities already used by other rooms
         filtered_entities = sorted([
@@ -484,6 +486,8 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         for entry in current_entries:
             entities = entry.data.get(CONF_ENTITIES, [])
             existing_entities_in_rooms.update(entities)
+            integration_rooms = entry.data.get(CONF_INTEGRATION_ROOMS, [])
+            existing_entities_in_rooms.update(integration_rooms)
         _LOGGER.debug(f"Already picked entities: {existing_entities_in_rooms}")
         
         filtered_entities = sorted([entity for entity in filtered_entities if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices])
