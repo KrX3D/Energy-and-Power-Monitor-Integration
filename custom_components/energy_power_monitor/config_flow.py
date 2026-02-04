@@ -475,7 +475,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         
         filtered_entities = sorted([entity for entity in filtered_entities if entity not in existing_entities_in_rooms and entity not in selected_smart_meter_devices])
         filtered_entities = sorted(set(filtered_entities))
-        combined_entities = sorted(filtered_entities.union(filtered_old_entities).union(old_integration_entities))
+        combined_entities = sorted(set(filtered_entities).union(filtered_old_entities).union(old_integration_entities))
         _LOGGER.debug(f"Combined entities: {combined_entities}")
 
         smart_meter_options = sorted(filtered_entities)
