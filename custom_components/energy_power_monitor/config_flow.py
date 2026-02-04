@@ -219,8 +219,6 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # If the field is cleared, use the translated 'None'
             selected_smd = selected_smd if selected_smd != "" else TRANSLATION_NONE
             _LOGGER.info(f"selected_smd after: {selected_smd}")
-            # Get selected entities from the existing rooms
-            selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, self.selected_type)
             translated_entity_type = await get_translated_entity_type(self.hass, self.selected_type)
             _LOGGER.info(f"Selected entities: {selected_entities}")
             _LOGGER.info(f"Entity type: {translated_entity_type}")
@@ -376,8 +374,6 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
                 current_entity_type = self.config_entry.data.get(CONF_ENTITY_TYPE)  # Default to power if not found
 
-                # Get selected entities from the existing rooms
-                selected_entities = get_selected_entities_for_rooms(self.hass, selected_existing_rooms, integration_entities, selected_entities, current_entity_type)
                 _LOGGER.info(f"Selected entities: {selected_entities}")
 
                 translated_entity_type = await get_translated_entity_type(self.hass, current_entity_type)
