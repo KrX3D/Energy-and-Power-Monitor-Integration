@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "room": "Zone Name",
+          "entity_type": "Entity Type Filter"
+        },
+        "title": "Zone Configuration",
+        "description": "Select the zone and the type"
+      },
+      "select_entities": {
+        "data": {
+          "smart_meter_device": "Smart Monitor for this Zone",
+          "entities": "Entities",
+          "integration_rooms": "Included Zones",
+          "none": "None"
+        },
+        "title": "Zone Configuration",
+        "description": "Select a Smart Monitor for this zone and the sensors included in it"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "Reconfigure Zone",
+        "description": "Change the zone name, Smart Monitor, or sensors",
+        "data": {
+          "room": "Zone",
+          "smart_meter_device": "Smart Monitor for this Zone",
+          "entities": "Entities",
+          "integration_rooms": "Included Zones",
+          "none": "None"
+        }
+      },
+      "select_entities": {
+        "data": {
+          "none": "None"
+        }
+      }
+    }
+  },
+  "selector": {
+    "entity_type": {
+      "options": {
+        "energy": "Energy",
+        "power": "Power"
+      }
+    }
+  }
+}
