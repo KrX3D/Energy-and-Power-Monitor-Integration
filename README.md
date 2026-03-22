@@ -16,6 +16,12 @@ Hello! This is my first integration and my first GitHub repository, so please be
 
 ---
 
+## Requirements
+
+- Home Assistant **2026.3.0** or newer
+
+---
+
 ## Installation
 
 ### HACS (recommended)
@@ -45,15 +51,18 @@ You can configure three things:
 - **Entities**
   - Select the entities that belong to this zone.
   - The integration will create a sensor that sums them up.
+  - The dropdown is filtered: only sensors of the correct type (`_power` or `_energy`) are shown, and sensors already assigned to another zone are hidden.
 
-- **Smart Meter Device (optional)**
+- **Smart Monitor (optional)**
   - Choose an optional smart meter for that zone.
+  - Leave it empty if you don't need untracked consumption monitoring.
   - The untracked sensor will show:  
     `smart_meter_value - sum_of_selected_entities`
 
-- **Created Zones (optional)**
+- **Included Zones (optional)**
   - Pick one or more already‑created zones to create a hierarchy.
   - This lets you build nested zones like *House → Floor → Zone*.
+  - Zones already assigned to another parent zone are hidden from the list.
 
 ---
 
@@ -96,31 +105,37 @@ HOUSE
 ### Example: A Whole‑House Summary
 1. Create *Living Room*, *Kitchen*, and *Bathroom* zones with their own entities.
 2. Create a new zone called *House*.
-3. In **Created Zones**, select *Living Room*, *Kitchen*, and *Bathroom*.
+3. In **Included Zones**, select *Living Room*, *Kitchen*, and *Bathroom*.
 4. The *House* sensor will now represent the sum of those zones.
 
 ---
 
 ### What Does This Integration Do?
 
-> _More information will be added soon._
-
 - This integration allows you to create multiple groups for your energy and power sensors.
-- Most dropdown boxes are filtered to avoid duplicate selections. For example, once an energy/power sensor is added to one integration entity, it will no longer appear for selection until it is unselected.
-- The initial GUI allows you to choose between "Energy" and "Power", filtering the entities available in the second GUI.
+- Dropdown boxes are filtered to avoid duplicate selections. Once an energy/power sensor is assigned to a zone it will no longer appear for selection in other zones.
+- The initial screen lets you choose between **Energy** and **Power**, which filters the entities available in the next step.
 
-**Second GUI:**
+**Configuration screen:**
 - **Entities:**
   - Select the energy/power entities for a specific zone (e.g., the Living Room).
-  - A sensor will be created that combines all selected energy/power values. For example: "Living Room - Power".
-- **Smart Meter Device:**
-  - You can optionally select a Smart Meter for the zone (e.g., Living Room) or leave it as "None". The value of the selected Smart Meter will be subtracted from the sum of the 
-    selected entities in that zone. The difference will be stored in a second sensor, such as "Untracked - Power".
-  - If you have created more zones/subzones, they will appear under **Created Zones**.
-  - Selecting a zone will aggregate the values from sensors like "Living Room - Power" and "Untracked - Power" (if present).
+  - A sensor will be created that sums all selected values — for example: `Living Room selected entities - Power`.
+- **Smart Monitor:**
+  - Optionally select a Smart Meter for the zone. Leave empty if not needed.
+  - The value of the selected Smart Meter will be subtracted from the sum of the selected entities. The difference is stored in a second sensor — for example: `Living Room untracked - Power`.
+- **Included Zones:**
+  - If you have already created zones, they will appear here.
+  - Selecting a zone will aggregate its sensor values (including its untracked sensor, if present) into this zone.
 
-- You can build a hierarchical view, where the topmost entity aggregates all the values from sub-entities.  
-  This way, you can monitor which device or zone consumes how much energy or power.
+- You can build a hierarchical view where the topmost zone aggregates all values from sub-zones, letting you monitor which device or zone consumes how much energy or power.
+
+---
+
+## Resilience
+
+- If a tracked entity is **removed** from Home Assistant, it is automatically dropped from the zone without any manual reconfiguration.
+- If a tracked entity is **renamed**, the reference is automatically updated in the zone configuration.
+- Both changes are persisted immediately so they survive a restart.
 
 ---
 
@@ -131,7 +146,7 @@ When you add a zone, the integration creates:
 - **Zone sensor** (example: `sensor.energy_power_monitor_living_room_power`)
   - Sum of all selected entities.
 
-- **Untracked sensor** (optional, if smart meter is selected)
+- **Untracked sensor** (optional, only created when a Smart Monitor is selected)
   - Shows the difference between the smart meter and the tracked entities.
   - Example: `sensor.energy_power_monitor_living_room_untracked_power`
 
@@ -143,15 +158,21 @@ When you add a zone, the integration creates:
 **Entity ID pattern**
 - `sensor.energy_power_monitor_<zone_name>_<power|energy>`
 
+**Friendly name pattern**
+- `<Zone Name> selected entities - <Power|Energy>`
+
 **State**
 - The sum of all selected entities (power in W or energy in kWh).
 
 **Attributes**
-- `selected_entities`: List of entity IDs selected for the zone.
+- `selected_entities`: List of directly assigned entity IDs (does not include entities pulled in via Included Zones).
 
 ### Untracked (smart meter) sensor
 **Entity ID pattern**
 - `sensor.energy_power_monitor_<zone_name>_untracked_<power|energy>`
+
+**Friendly name pattern**
+- `<Zone Name> untracked - <Power|Energy>`
 
 **State**
 - `smart_meter_value - sum_of_selected_entities`
@@ -167,4 +188,5 @@ When you add a zone, the integration creates:
 
 - Use **Power** for live consumption (W) and **Energy** for accumulated usage (kWh).
 - Build your hierarchy from the bottom up (devices → zones → floors → house).
-- Smart meters are optional, but helpful for identifying “unknown” consumption.
+- Smart monitors are optional, but helpful for identifying "unknown" consumption.
+- Zone names support unicode characters (e.g. accented letters) — the integration normalizes them automatically for entity IDs.
