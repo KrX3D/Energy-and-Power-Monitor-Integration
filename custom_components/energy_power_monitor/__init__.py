@@ -8,42 +8,27 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-# Set up the component
-async def async_setup(hass: HomeAssistant, config: dict):
+PLATFORMS = ["sensor"]
+
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the energy_power_monitor component."""
-    hass.data.setdefault(DOMAIN, {"zones": []})
     return True
 
-# Handle the setup of the config entry
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a config entry for Energy and Power Monitor."""
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
-
-    _LOGGER.debug(f"Setting up Energy and Power Monitor for entry_id: {entry.title}")
-
-    # Set up the sensor platform
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    _LOGGER.debug("Setting up Energy and Power Monitor for entry: %s", entry.title)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
-# Handle unloading of the config entry
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle unloading of an entry."""
-    if entry.entry_id in hass.data[DOMAIN]:
-        hass.data[DOMAIN].pop(entry.entry_id)
+    _LOGGER.debug("Unloading Energy and Power Monitor for entry: %s", entry.title)
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    _LOGGER.debug(f"Unloading Energy and Power Monitor for entry_id: {entry.title}")
 
-    # Unload the sensor platform (pass string, not list)
-    await hass.config_entries.async_forward_entry_unload(entry, "sensor")
-    return True
-
-# Handle removal of the config entry
-async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Remove a config entry."""
-    if entry.entry_id in hass.data[DOMAIN]:
-        hass.data[DOMAIN].pop(entry.entry_id)
-
-    _LOGGER.debug(f"Removing Energy and Power Monitor for entry_id: {entry.title}")
-
-    return True
+    _LOGGER.debug("Removing Energy and Power Monitor for entry: %s", entry.title)
