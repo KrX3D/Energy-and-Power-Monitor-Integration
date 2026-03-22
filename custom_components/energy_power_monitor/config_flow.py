@@ -268,7 +268,6 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         }
 
         entity_options = build_entity_options(self.hass, filtered_entities)
-        # Deduplicate smart meter options (same list as entities, single-select)
         smart_meter_options = list({o["value"]: o for o in entity_options}.values())
 
         data_schema = vol.Schema({
@@ -434,21 +433,24 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         )
         _LOGGER.debug("Combined entities for options form: %s", combined_entities)
 
-        # Smart meter options: available entities + current smd (if set)
-        smart_meter_pool = sorted(set(filtered_entities))
-        if is_smart_meter_selected(old_entities_smd) and old_entities_smd not in smart_meter_pool:
-            smart_meter_pool.insert(0, old_entities_smd)
-        smart_meter_option_list = build_entity_options(self.hass, smart_meter_pool)
-        # Deduplicate
-        smart_meter_option_list = list({o["value"]: o for o in smart_meter_option_list}.values())
-
         # Pre-select existing smart meter if valid
         if is_smart_meter_selected(old_entities_smd):
             smd_schema_field = vol.Optional(CONF_SMART_METER_DEVICE, default=old_entities_smd)
         else:
             smd_schema_field = vol.Optional(CONF_SMART_METER_DEVICE)
 
-        # Remove the smart meter itself from the entities list to avoid dual-selection
+        # Smart meter options: available filtered entities + current smd re-inserted if set
+        smart_meter_pool = sorted(set(filtered_entities))
+        if is_smart_meter_selected(old_entities_smd) and old_entities_smd not in smart_meter_pool:
+            smart_meter_pool.insert(0, old_entities_smd)
+        smart_meter_option_list = build_entity_options(self.hass, smart_meter_pool)
+        smart_meter_option_list = list({o["value"]: o for o in smart_meter_option_list}.values())
+
+        # Combined entity list: filtered available + previously selected (so existing picks stay visible)
+        combined_entities = sorted(
+            set(filtered_entities) | filtered_old_entities | old_integration_entities
+        )
+        # Remove smart meter from entity picker to avoid dual-selection
         if is_smart_meter_selected(old_entities_smd):
             combined_entities = [e for e in combined_entities if e != old_entities_smd]
 
