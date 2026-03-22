@@ -277,19 +277,11 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=[]): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=entity_options,
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
+            vol.Optional(CONF_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, filtered_entities))
             ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=build_select_options_from_map(filtered_existing_zones),
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): vol.All(
+                cv.multi_select(filtered_existing_zones)
             ),
         })
         return self.async_show_form(
@@ -462,19 +454,11 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
-            vol.Optional(CONF_ENTITIES, default=list(old_entities)): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=build_entity_options(self.hass, combined_entities),
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
+            vol.Optional(CONF_ENTITIES, default=list(old_entities)): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, combined_entities))
             ),
-            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_zones): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=build_select_options_from_map(filtered_existing_zones),
-                    multiple=True,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
+            vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_zones): vol.All(
+                cv.multi_select(filtered_existing_zones)
             ),
         })
         return self.async_show_form(step_id="user", data_schema=options_schema, errors=errors)
