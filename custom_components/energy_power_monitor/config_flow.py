@@ -66,14 +66,18 @@ def get_filtered_entities_for_zone(hass, zone_id):
 
 
 async def get_integration_entities(hass):
-    """Retrieve all sensor entities created by this integration with their friendly names."""
+    """Retrieve main zone sensor entities created by this integration (excludes untracked sensors)."""
     entity_registry = er.async_get(hass)
     integration_entities = {}
     for entity_id, entity in entity_registry.entities.items():
-        if entity.unique_id and entity.unique_id.startswith(DOMAIN):
-            state = hass.states.get(entity_id)
-            if state and "friendly_name" in state.attributes:
-                integration_entities[entity_id] = state.attributes["friendly_name"]
+        if not (entity.unique_id and entity.unique_id.startswith(DOMAIN)):
+            continue
+        # Exclude untracked sensors — only main zone sensors are valid zone targets
+        if "_untracked_" in entity_id:
+            continue
+        state = hass.states.get(entity_id)
+        if state and "friendly_name" in state.attributes:
+            integration_entities[entity_id] = state.attributes["friendly_name"]
     _LOGGER.debug("get_integration_entities: %s", integration_entities)
     return integration_entities
 
@@ -144,29 +148,24 @@ def remove_smart_meter_from_entities(selected_smd, selected_entities):
     return selected_entities
 
 
-def get_selected_integration_zones(hass, existing_zones):
-    """Return a mapping of integration zone entity_ids that are already assigned to another zone."""
-    filtered = {}
-    for entity_id in existing_zones:
-        entity_state = hass.states.get(entity_id)
-        if not entity_state:
+def get_selected_integration_zones(hass, existing_zones=None, exclude_entry_id=None):
+    """Return the set of integration zone entity_ids already assigned to any config entry.
+
+    Integration zones are stored in CONF_INTEGRATION_ROOMS on the config entry, NOT in
+    the sensor's selected_entities state attribute (which only holds CONF_ENTITIES).
+    We therefore read directly from config entry data here.
+
+    exclude_entry_id: when called from the options flow, pass the current entry's ID so
+    a zone is not considered taken by itself and remains visible in its own picker.
+    """
+    assigned = set()
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.entry_id == exclude_entry_id:
             continue
-        for entity in entity_state.attributes.get("selected_entities", []):
-            if (
-                entity.startswith(f"sensor.{DOMAIN}")
-                and not entity.endswith(("_untracked_power", "_untracked_energy"))
-            ):
-                state = hass.states.get(entity)
-                if not state:
-                    continue
-                friendly_name = state.attributes.get("friendly_name", entity)
-                friendly_name = (
-                    friendly_name
-                    .replace(" selected entities - Power", "")
-                    .replace(" selected entities - Energy", "")
-                )
-                filtered[entity] = friendly_name
-    return dict(sorted(filtered.items(), key=lambda item: item[1]))
+        for zone_id in entry.data.get(CONF_INTEGRATION_ROOMS, []):
+            assigned.add(zone_id)
+    _LOGGER.debug("Already assigned integration zones: %s", assigned)
+    return assigned
 
 
 def build_existing_zones_for_gui(integration_entities):
@@ -261,7 +260,7 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         existing_zones = build_existing_zones_for_gui(integration_entities)
-        assigned_integration_zones = get_selected_integration_zones(self.hass, existing_zones)
+        assigned_integration_zones = get_selected_integration_zones(self.hass)
         filtered_existing_zones = {
             eid: name
             for eid, name in existing_zones.items()
@@ -283,14 +282,14 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 selector.SelectSelectorConfig(
                     options=entity_options,
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=[]): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=build_select_options_from_map(filtered_existing_zones),
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
         })
@@ -414,7 +413,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             if name in existing_zones_for_gui
         ]
 
-        assigned_integration_zones = get_selected_integration_zones(self.hass, existing_zones)
+        assigned_integration_zones = get_selected_integration_zones(self.hass, exclude_entry_id=self.config_entry.entry_id)
         filtered_existing_zones = {
             eid: name
             for eid, name in existing_zones.items()
@@ -465,14 +464,14 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.SelectSelectorConfig(
                     options=build_entity_options(self.hass, combined_entities),
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
             vol.Optional(CONF_INTEGRATION_ROOMS, default=selected_integration_zones): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=build_select_options_from_map(filtered_existing_zones),
                     multiple=True,
-                    mode=selector.SelectSelectorMode.LIST,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
         })
