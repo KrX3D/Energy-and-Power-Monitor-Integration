@@ -541,3 +541,4 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             if self.hass.states.get(eid):
                 _LOGGER.info("Removing entity state: %s", eid)
                 self.hass.states.async_remove(eid)
+                
