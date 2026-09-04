@@ -420,10 +420,6 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
             if e not in existing_entities_in_zones and e not in selected_smart_meter_devices
         )
         filtered_entities = sorted(set(filtered_entities))
-        combined_entities = sorted(
-            set(filtered_entities) | filtered_old_entities | old_integration_entities
-        )
-        _LOGGER.debug("Combined entities for options form: %s", combined_entities)
 
         # Pre-select existing smart meter if valid
         if is_smart_meter_selected(old_entities_smd):
@@ -442,6 +438,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         combined_entities = sorted(
             set(filtered_entities) | filtered_old_entities | old_integration_entities
         )
+        _LOGGER.debug("Combined entities for options form: %s", combined_entities)
         # Remove smart meter from entity picker to avoid dual-selection
         if is_smart_meter_selected(old_entities_smd):
             combined_entities = [e for e in combined_entities if e != old_entities_smd]
