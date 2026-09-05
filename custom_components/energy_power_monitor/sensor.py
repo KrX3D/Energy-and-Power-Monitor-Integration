@@ -227,21 +227,27 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         )
 
     def _calculate_state(self):
-        """Sum all tracked entities, skipping invalid/negative values."""
+        """Sum all tracked entities, skipping invalid/negative values for this cycle.
+
+        Entities with a transient invalid/negative reading are only skipped for
+        this calculation, not dropped from tracking — otherwise a single
+        unavailable/negative sample would permanently exclude that entity from
+        the sum until the config entry is reloaded. Permanent removal is only
+        handled by the entity_registry_updated listener when an entity is
+        actually deleted.
+        """
         total = 0.0
-        valid = []
         for entity_id in self._entities:
             state_obj = self.hass.states.get(entity_id)
-            if is_valid_value(state_obj):
-                try:
-                    value = float(state_obj.state)
-                    if value >= 0:
-                        total += value
-                        valid.append(entity_id)
-                except (ValueError, TypeError):
-                    _LOGGER.warning("Cannot convert state of '%s' to float: %s", entity_id, state_obj.state)
-        if len(valid) != len(self._entities):
-            self._entities = valid
+            if not is_valid_value(state_obj):
+                continue
+            try:
+                value = float(state_obj.state)
+            except (ValueError, TypeError):
+                _LOGGER.warning("Cannot convert state of '%s' to float: %s", entity_id, state_obj.state)
+                continue
+            if value >= 0:
+                total += value
         return round(total, 1)
 
     def _setup_state_listeners(self):
