@@ -79,6 +79,8 @@ Sometimes a sensor's entity ID happens to end in `_power` or `_energy` without a
 2. Choose **Manage excluded entities**.
 3. Select every entity that should never be offered as an Entity or Smart Monitor.
 
+The list to pick from only shows `_power`/`_energy` sensors that are actually still available for selection right now — the same pool the Entities/Smart Monitor dropdowns draw from — not every power/energy entity in your Home Assistant instance. An entity already assigned to a zone or already used as a Smart Monitor won't show up here either, since it's not a candidate anywhere until it's freed up.
+
 This creates a single, dedicated **Excluded Entities** entry that shows up right alongside your zones in the integration's entry list — that's also where you go to edit the list later (click it → **Configure**). Only one such entry can exist; the menu option won't let you create a second one.
 
 Once set:

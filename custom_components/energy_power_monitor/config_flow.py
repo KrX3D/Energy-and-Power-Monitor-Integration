@@ -188,17 +188,32 @@ def get_excluded_entities(hass):
     return excluded
 
 
-def get_excludable_entities(hass):
-    """Return all power/energy sensors eligible for the global exclusion list.
+def get_assigned_entities(hass):
+    """Return every entity currently used by a zone, as an Entity or Smart Monitor."""
+    assigned = set()
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        assigned.update(entry.data.get(CONF_ENTITIES, []))
+        device = entry.data.get(CONF_SMART_METER_DEVICE)
+        if is_smart_meter_selected(device):
+            assigned.add(device)
+    return assigned
 
-    This intentionally ignores current zone assignments — excluding an entity
-    is a standing decision independent of whether it happens to be in a zone
-    right now.
+
+def get_excludable_entities(hass):
+    """Return power/energy sensors eligible for the global exclusion list.
+
+    Mirrors the "available" pool shown in the zone Entities/Smart Monitor
+    pickers: entities already assigned to a zone are left off this list too,
+    so it only ever lists what's actually still selectable — not every
+    _power/_energy entity in Home Assistant.
     """
     all_entities = hass.states.async_entity_ids("sensor")
+    assigned = get_assigned_entities(hass)
     candidates = [
         e for e in all_entities
-        if (e.endswith("_power") or e.endswith("_energy")) and not e.startswith(f"sensor.{DOMAIN}")
+        if (e.endswith("_power") or e.endswith("_energy"))
+        and not e.startswith(f"sensor.{DOMAIN}")
+        and e not in assigned
     ]
     return sorted(candidates)
 
