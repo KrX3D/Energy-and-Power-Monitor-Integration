@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Immer auszuschließende Entitäten"
+          "excluded_power_entities": "Immer auszuschließende Leistungsentitäten",
+          "excluded_energy_entities": "Immer auszuschließende Energieentitäten"
         },
         "title": "Ausgeschlossene Entitäten",
         "description": "Wählen Sie Leistungs-/Energiesensoren aus, die nie als Entität oder Smart Monitor bei der Konfiguration einer Zone angeboten werden sollen (zum Beispiel Entitäten, deren Name zufällig auf _power oder _energy endet, aber keine echten Verbrauchssensoren sind)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Immer auszuschließende Entitäten"
+          "excluded_power_entities": "Immer auszuschließende Leistungsentitäten",
+          "excluded_energy_entities": "Immer auszuschließende Energieentitäten"
         },
         "title": "Ausgeschlossene Entitäten",
         "description": "Wählen Sie Leistungs-/Energiesensoren aus, die nie als Entität oder Smart Monitor bei der Konfiguration einer Zone angeboten werden sollen."

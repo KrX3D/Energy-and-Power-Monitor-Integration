@@ -1,6 +1,6 @@
 import logging
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
-from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.const import Platform, UnitOfPower, UnitOfEnergy, STATE_UNKNOWN, STATE_UNAVAILABLE
 from homeassistant.helpers import entity_registry as er
 from homeassistant.core import HomeAssistant, callback, Event
@@ -152,7 +152,16 @@ class EnergyandPowerMonitorSensor(SensorEntity):
         self._entry_id = entry_id
         self._entity_type = entity_type
         self._unique_id = self._make_unique_id()
-        self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        # Deliberately not generate_entity_id(): that helper avoids collisions
+        # by checking which entity_ids are *currently live* in hass.states,
+        # which is unreliable right after a restart/reload (a stale or
+        # not-yet-removed entity can occupy the id this entity is about to
+        # reclaim, permanently baking a spurious "_2" suffix into the entity
+        # registry the first time a unique_id is registered). self._unique_id
+        # is already a fully deterministic slug, so the entity_id it maps to
+        # should be too — any genuine collision is handled by the entity
+        # registry itself when the entity is added.
+        self.entity_id = ENTITY_ID_FORMAT.format(self._unique_id)
         self._unsubscribe_state_changes = None
         self._unsubscribe_registry_listener = None
         _LOGGER.debug(
@@ -429,7 +438,16 @@ class SmartMeterSensor(SensorEntity):
         self._energy_power_monitor_sensor = energy_power_monitor_sensor
         # Unique ID: stable, zone-name-based (not device-name-based)
         self._unique_id = f"{DOMAIN}_{sanitize_zone_name(zone_name)}_untracked_{entity_type}"
-        self.entity_id = generate_entity_id(ENTITY_ID_FORMAT, self._unique_id, hass=self.hass)
+        # Deliberately not generate_entity_id(): that helper avoids collisions
+        # by checking which entity_ids are *currently live* in hass.states,
+        # which is unreliable right after a restart/reload (a stale or
+        # not-yet-removed entity can occupy the id this entity is about to
+        # reclaim, permanently baking a spurious "_2" suffix into the entity
+        # registry the first time a unique_id is registered). self._unique_id
+        # is already a fully deterministic slug, so the entity_id it maps to
+        # should be too — any genuine collision is handled by the entity
+        # registry itself when the entity is added.
+        self.entity_id = ENTITY_ID_FORMAT.format(self._unique_id)
         self._unsubscribe_state_changes = None
         self._unsubscribe_registry_listener = None
         _LOGGER.debug(

@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Her zaman hariç tutulacak varlıklar"
+          "excluded_power_entities": "Her zaman hariç tutulacak güç varlıkları",
+          "excluded_energy_entities": "Her zaman hariç tutulacak enerji varlıkları"
         },
         "title": "Hariç Tutulan Varlıklar",
         "description": "Herhangi bir bölge yapılandırılırken Varlık veya Akıllı İzleme olarak asla sunulmaması gereken güç/enerji sensörlerini seçin (örneğin, adı tesadüfen _power veya _energy ile biten ancak gerçek tüketim sensörü olmayan varlıklar)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Her zaman hariç tutulacak varlıklar"
+          "excluded_power_entities": "Her zaman hariç tutulacak güç varlıkları",
+          "excluded_energy_entities": "Her zaman hariç tutulacak enerji varlıkları"
         },
         "title": "Hariç Tutulan Varlıklar",
         "description": "Herhangi bir bölge yapılandırılırken Varlık veya Akıllı İzleme olarak asla sunulmaması gereken güç/enerji sensörlerini seçin."

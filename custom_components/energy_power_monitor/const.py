@@ -10,6 +10,12 @@ CONF_INTEGRATION_ROOMS = "integration_rooms"
 CONF_EXCLUDED_ENTITIES = "excluded_entities"
 CONF_ENTRY_KIND = "entry_kind"
 
+# Form-only field keys for the Excluded Entities picker: the underlying stored
+# data (CONF_EXCLUDED_ENTITIES) stays one combined list, but the form splits
+# the picker into a Power dropdown and an Energy dropdown for readability.
+CONF_EXCLUDED_POWER_ENTITIES = "excluded_power_entities"
+CONF_EXCLUDED_ENERGY_ENTITIES = "excluded_energy_entities"
+
 ENTITY_TYPE_POWER = "power"
 ENTITY_TYPE_ENERGY = "energy"
 

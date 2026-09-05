@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "항상 제외할 엔티티"
+          "excluded_power_entities": "항상 제외할 전력 엔티티",
+          "excluded_energy_entities": "항상 제외할 에너지 엔티티"
         },
         "title": "제외된 엔티티",
         "description": "구역을 설정할 때 엔티티 또는 스마트 모니터로 표시되지 않아야 하는 전력/에너지 센서를 선택하세요 (예: 이름이 우연히 _power 또는 _energy로 끝나지만 실제 소비 센서가 아닌 엔티티)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "항상 제외할 엔티티"
+          "excluded_power_entities": "항상 제외할 전력 엔티티",
+          "excluded_energy_entities": "항상 제외할 에너지 엔티티"
         },
         "title": "제외된 엔티티",
         "description": "구역을 설정할 때 엔티티 또는 스마트 모니터로 표시되지 않아야 하는 전력/에너지 센서를 선택하세요."

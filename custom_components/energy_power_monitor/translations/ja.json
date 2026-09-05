@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "常に除外するエンティティ"
+          "excluded_power_entities": "常に除外する電力エンティティ",
+          "excluded_energy_entities": "常に除外するエネルギーエンティティ"
         },
         "title": "除外エンティティ",
         "description": "ゾーンを設定する際にエンティティやスマートモニターとして表示しない電力/エネルギーセンサーを選択します(例:名前がたまたま _power や _energy で終わるが、実際の消費センサーではないエンティティなど)。"
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "常に除外するエンティティ"
+          "excluded_power_entities": "常に除外する電力エンティティ",
+          "excluded_energy_entities": "常に除外するエネルギーエンティティ"
         },
         "title": "除外エンティティ",
         "description": "ゾーンを設定する際にエンティティやスマートモニターとして表示しない電力/エネルギーセンサーを選択します。"

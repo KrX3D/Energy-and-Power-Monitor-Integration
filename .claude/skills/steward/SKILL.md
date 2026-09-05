@@ -79,3 +79,30 @@ tolerate entries that aren't zones — they already do, because they only
 ever read zone-specific keys via `entry.data.get(key, default)`, which is
 silently absent (not an error) on the exclusions entry. Keep that
 `.get(..., default)` discipline if you add a third entry kind.
+
+## Never call `generate_entity_id(..., hass=hass)` for this integration's own entities
+
+`EnergyandPowerMonitorSensor`/`SmartMeterSensor` build their `entity_id`
+directly (`ENTITY_ID_FORMAT.format(self._unique_id)`), not via
+`homeassistant.helpers.entity.generate_entity_id()`. That function used to be
+used here and was removed because it avoids collisions by checking which
+entity_ids are *currently live* in `hass.states` — a check that has nothing
+to do with whether the id is actually free for this `unique_id`, and is
+unreliable right at startup/reload (a not-yet-torn-down old entity can
+occupy the slug this entity is about to reclaim). In practice this showed up
+as debug logs like `entity_id=sensor.energy_power_monitor_kuche_power_2`
+on every restart; it was mostly harmless for already-registered zones
+(Home Assistant's entity platform always overwrites `entity.entity_id` with
+whatever the entity registry has on file for that `unique_id` once
+`async_add_entities()` runs — confirmed by later log lines using the clean,
+unsuffixed id), but for a *brand-new* zone whose unique_id isn't in the
+registry yet, this bogus suggested id becomes the permanently stored one.
+
+Since `self._unique_id` for both sensor classes is already a fully
+deterministic slug (derived from `sanitize_zone_name()` + entity type, not
+from anything HA needs to disambiguate), there is nothing for
+`generate_entity_id`'s live-state check to usefully add — building the
+`entity_id` string directly is both simpler and correct. If a genuine
+`unique_id` collision ever occurs, the entity registry's own
+`async_get_or_create()` disambiguates it when the entity is actually added,
+which is the right layer for that job.
