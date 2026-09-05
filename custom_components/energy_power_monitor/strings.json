@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Entities to always exclude"
+          "excluded_power_entities": "Power entities to always exclude",
+          "excluded_energy_entities": "Energy entities to always exclude"
         },
         "title": "Excluded Entities",
         "description": "Pick power/energy sensors that should never be offered as an Entity or Smart Monitor when configuring any zone (for example, entities whose name coincidentally ends in _power or _energy but aren't real consumption sensors)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Entities to always exclude"
+          "excluded_power_entities": "Power entities to always exclude",
+          "excluded_energy_entities": "Energy entities to always exclude"
         },
         "title": "Excluded Entities",
         "description": "Pick power/energy sensors that should never be offered as an Entity or Smart Monitor when configuring any zone."

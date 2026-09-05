@@ -17,6 +17,8 @@ from .const import (
     CONF_INTEGRATION_ROOMS,
     CONF_SMART_METER_DEVICE,
     CONF_EXCLUDED_ENTITIES,
+    CONF_EXCLUDED_POWER_ENTITIES,
+    CONF_EXCLUDED_ENERGY_ENTITIES,
     CONF_ENTRY_KIND,
     ENTRY_KIND_EXCLUSIONS,
     EXCLUDED_ENTITIES_TITLE,
@@ -278,7 +280,10 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="already_configured")
 
         if user_input is not None:
-            selected = sorted(user_input.get(CONF_EXCLUDED_ENTITIES, []))
+            selected = sorted(
+                set(user_input.get(CONF_EXCLUDED_POWER_ENTITIES, []))
+                | set(user_input.get(CONF_EXCLUDED_ENERGY_ENTITIES, []))
+            )
             _LOGGER.info("Creating Excluded Entities entry: %s", selected)
             return self.async_create_entry(
                 title=EXCLUDED_ENTITIES_TITLE,
@@ -289,9 +294,14 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         candidates = get_excludable_entities(self.hass)
+        power_candidates = [e for e in candidates if e.endswith("_power")]
+        energy_candidates = [e for e in candidates if e.endswith("_energy")]
         data_schema = vol.Schema({
-            vol.Optional(CONF_EXCLUDED_ENTITIES, default=[]): vol.All(
-                cv.multi_select(build_entity_label_map(self.hass, candidates))
+            vol.Optional(CONF_EXCLUDED_POWER_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, power_candidates))
+            ),
+            vol.Optional(CONF_EXCLUDED_ENERGY_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, energy_candidates))
             ),
         })
         return self.async_show_form(step_id="exclusions", data_schema=data_schema)
@@ -398,9 +408,19 @@ class EnergyandPowerMonitorExclusionsOptionsFlowHandler(config_entries.OptionsFl
 
     async def async_step_exclusions(self, user_input=None):
         old_excluded = set(self.config_entry.data.get(CONF_EXCLUDED_ENTITIES, []))
+        old_power = sorted(e for e in old_excluded if e.endswith("_power"))
+        old_energy = sorted(e for e in old_excluded if e.endswith("_energy"))
+        # Anything excluded before that no longer ends in _power/_energy (e.g.
+        # renamed since) can't be shown in either dropdown below; carry it
+        # forward untouched instead of silently dropping it on save.
+        unlisted = old_excluded - set(old_power) - set(old_energy)
 
         if user_input is not None:
-            selected = sorted(user_input.get(CONF_EXCLUDED_ENTITIES, []))
+            selected = sorted(
+                set(user_input.get(CONF_EXCLUDED_POWER_ENTITIES, []))
+                | set(user_input.get(CONF_EXCLUDED_ENERGY_ENTITIES, []))
+                | unlisted
+            )
             _LOGGER.info("Updating Excluded Entities entry: %s", selected)
             new_data = dict(self.config_entry.data)
             new_data[CONF_EXCLUDED_ENTITIES] = selected
@@ -411,9 +431,14 @@ class EnergyandPowerMonitorExclusionsOptionsFlowHandler(config_entries.OptionsFl
         # matches the _power/_energy suffix (e.g. it was renamed), so it isn't
         # silently dropped from the list just by opening this form.
         candidates = sorted(set(get_excludable_entities(self.hass)) | old_excluded)
+        power_candidates = [e for e in candidates if e.endswith("_power")]
+        energy_candidates = [e for e in candidates if e.endswith("_energy")]
         data_schema = vol.Schema({
-            vol.Optional(CONF_EXCLUDED_ENTITIES, default=sorted(old_excluded)): vol.All(
-                cv.multi_select(build_entity_label_map(self.hass, candidates))
+            vol.Optional(CONF_EXCLUDED_POWER_ENTITIES, default=old_power): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, power_candidates))
+            ),
+            vol.Optional(CONF_EXCLUDED_ENERGY_ENTITIES, default=old_energy): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, energy_candidates))
             ),
         })
         return self.async_show_form(step_id="exclusions", data_schema=data_schema)

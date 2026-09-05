@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "始终排除的实体"
+          "excluded_power_entities": "始终排除的功率实体",
+          "excluded_energy_entities": "始终排除的能量实体"
         },
         "title": "排除的实体",
         "description": "选择在配置任何区域时不应作为实体或智能监控提供的功率/能量传感器(例如名称恰好以 _power 或 _energy 结尾但并非真正消耗传感器的实体)。"
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "始终排除的实体"
+          "excluded_power_entities": "始终排除的功率实体",
+          "excluded_energy_entities": "始终排除的能量实体"
         },
         "title": "排除的实体",
         "description": "选择在配置任何区域时不应作为实体或智能监控提供的功率/能量传感器。"

@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Altijd uit te sluiten entiteiten"
+          "excluded_power_entities": "Altijd uit te sluiten vermogensentiteiten",
+          "excluded_energy_entities": "Altijd uit te sluiten energie-entiteiten"
         },
         "title": "Uitgesloten entiteiten",
         "description": "Selecteer vermogens-/energiesensoren die nooit mogen worden aangeboden als Entiteit of Slimme monitor bij het configureren van een zone (bijvoorbeeld entiteiten waarvan de naam toevallig eindigt op _power of _energy maar die geen echte verbruikssensoren zijn)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Altijd uit te sluiten entiteiten"
+          "excluded_power_entities": "Altijd uit te sluiten vermogensentiteiten",
+          "excluded_energy_entities": "Altijd uit te sluiten energie-entiteiten"
         },
         "title": "Uitgesloten entiteiten",
         "description": "Selecteer vermogens-/energiesensoren die nooit mogen worden aangeboden als Entiteit of Slimme monitor bij het configureren van een zone."

@@ -29,7 +29,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Entità da escludere sempre"
+          "excluded_power_entities": "Entità di potenza da escludere sempre",
+          "excluded_energy_entities": "Entità di energia da escludere sempre"
         },
         "title": "Entità escluse",
         "description": "Seleziona i sensori di potenza/energia che non devono mai essere proposti come Entità o Monitor intelligente durante la configurazione di una zona (ad esempio entità il cui nome termina casualmente in _power o _energy ma che non sono veri sensori di consumo)."
@@ -59,7 +60,8 @@
       },
       "exclusions": {
         "data": {
-          "excluded_entities": "Entità da escludere sempre"
+          "excluded_power_entities": "Entità di potenza da escludere sempre",
+          "excluded_energy_entities": "Entità di energia da escludere sempre"
         },
         "title": "Entità escluse",
         "description": "Seleziona i sensori di potenza/energia che non devono mai essere proposti come Entità o Monitor intelligente durante la configurazione di una zona."
