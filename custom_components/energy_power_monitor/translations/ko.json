@@ -22,6 +22,7 @@
       "add_zone": {
         "data": {
           "room": "구역 이름",
+          "hide_from_included_zones": "포함된 구역에서 숨기기",
           "entity_type": "엔티티 유형 필터"
         },
         "title": "구역 설정",
@@ -47,6 +48,7 @@
         "description": "구역 이름, 스마트 모니터 또는 센서를 변경하세요",
         "data": {
           "room": "구역",
+          "hide_from_included_zones": "포함된 구역에서 숨기기",
           "smart_meter_device": "이 구역의 스마트 모니터",
           "entities": "엔티티",
           "integration_rooms": "포함된 구역",

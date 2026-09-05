@@ -22,6 +22,7 @@ from .const import (
     CONF_ENTRY_KIND,
     ENTRY_KIND_EXCLUSIONS,
     EXCLUDED_ENTITIES_TITLE,
+    CONF_HIDE_FROM_INCLUDED_ZONES,
     sanitize_zone_name,
     is_smart_meter_selected,
 )
@@ -72,7 +73,18 @@ def get_filtered_entities_for_zone(hass, zone_id):
 
 
 async def get_integration_entities(hass):
-    """Retrieve main zone sensor entities created by this integration (excludes untracked sensors)."""
+    """Retrieve main zone sensor entities created by this integration (excludes untracked sensors).
+
+    Maps each zone's entity_id to its zone name read directly from the owning
+    config entry's CONF_ROOM — not derived from the entity's friendly_name
+    string. The friendly_name is built from a "<zone> selected entities -
+    <Power|Energy>" template that varies with capitalization/wording, so
+    stripping a hardcoded suffix from it to recover the zone name is fragile
+    and can silently fail to match (see git history for a bug this caused:
+    a zone matching itself by name failed and it could pick itself as its
+    own "Included Zone"). Reading CONF_ROOM straight from the config entry
+    is exact regardless of what the friendly_name looks like.
+    """
     entity_registry = er.async_get(hass)
     integration_entities = {}
     for entity_id, entity in entity_registry.entities.items():
@@ -81,9 +93,14 @@ async def get_integration_entities(hass):
         # Exclude untracked sensors — only main zone sensors are valid zone targets
         if "_untracked_" in entity_id:
             continue
-        state = hass.states.get(entity_id)
-        if state and "friendly_name" in state.attributes:
-            integration_entities[entity_id] = state.attributes["friendly_name"]
+        entry = (
+            hass.config_entries.async_get_entry(entity.config_entry_id)
+            if entity.config_entry_id
+            else None
+        )
+        zone_name = entry.data.get(CONF_ROOM) if entry else None
+        if zone_name:
+            integration_entities[entity_id] = zone_name
     _LOGGER.debug("get_integration_entities: %s", integration_entities)
     return integration_entities
 
@@ -221,14 +238,28 @@ def get_excludable_entities(hass):
 
 
 def build_existing_zones_for_gui(integration_entities):
-    """Build a {entity_id: friendly_name} dict suitable for zone dropdowns."""
-    existing = {
-        entity_id: friendly_name
-        .replace(" selected entities - Power", "")
-        .replace(" selected entities - Energy", "")
-        for entity_id, friendly_name in integration_entities.items()
-    }
-    return dict(sorted(existing.items(), key=lambda item: item[1]))
+    """Build a {entity_id: zone_name} dict suitable for zone dropdowns, sorted by name."""
+    return dict(sorted(integration_entities.items(), key=lambda item: item[1]))
+
+
+def get_hidden_integration_zones(hass):
+    """Return zone entity_ids configured to be hidden from every Included Zones picker.
+
+    Computed straight from config entry data (CONF_ROOM + CONF_ENTITY_TYPE),
+    same as the entity_id a zone's own sensor is given — no entity registry
+    lookup needed. Like excluded entities, this only filters candidate lists;
+    a zone already referenced as someone else's Included Zone before being
+    hidden stays referenced, so hiding it can't silently break that sum.
+    """
+    hidden = set()
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if not entry.data.get(CONF_HIDE_FROM_INCLUDED_ZONES):
+            continue
+        zone_name = entry.data.get(CONF_ROOM)
+        entity_type = entry.data.get(CONF_ENTITY_TYPE)
+        if zone_name and entity_type:
+            hidden.add(f"sensor.{DOMAIN}_{sanitize_zone_name(zone_name)}_{entity_type}")
+    return hidden
 
 
 # ---------------------------------------------------------------------------
@@ -252,10 +283,12 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self.selected_type = user_input[CONF_ENTITY_TYPE]
             self.zone_name = user_input[CONF_ROOM]
+            self.hide_from_included_zones = user_input.get(CONF_HIDE_FROM_INCLUDED_ZONES, False)
             return await self.async_step_select_entities()
 
         data_schema = vol.Schema({
             vol.Required(CONF_ROOM): cv.string,
+            vol.Optional(CONF_HIDE_FROM_INCLUDED_ZONES, default=False): selector.BooleanSelector(),
             vol.Required(CONF_ENTITY_TYPE, default=ENTITY_TYPE_POWER): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
@@ -355,15 +388,17 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_ENTITY_TYPE: self.selected_type,
                     CONF_ENTITIES: selected_entities,
                     CONF_INTEGRATION_ROOMS: selected_existing_zones,
+                    CONF_HIDE_FROM_INCLUDED_ZONES: self.hide_from_included_zones,
                 },
             )
 
         existing_zones = build_existing_zones_for_gui(integration_entities)
         assigned_integration_zones = get_selected_integration_zones(self.hass)
+        hidden_integration_zones = get_hidden_integration_zones(self.hass)
         filtered_existing_zones = {
             eid: name
             for eid, name in existing_zones.items()
-            if eid not in assigned_integration_zones
+            if eid not in assigned_integration_zones and eid not in hidden_integration_zones
         }
 
         entity_options = build_entity_options(self.hass, filtered_entities)
@@ -463,6 +498,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         old_entities_smd = old_data.get(CONF_SMART_METER_DEVICE, "")
         old_entities = set(old_data.get(CONF_ENTITIES, []))
         old_integration_zones = old_data.get(CONF_INTEGRATION_ROOMS, [])
+        old_hide_from_included_zones = old_data.get(CONF_HIDE_FROM_INCLUDED_ZONES, False)
         current_zone = old_data.get(CONF_ROOM, "")
 
         integration_entities = await get_integration_entities(self.hass)
@@ -498,6 +534,7 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_ENTITY_TYPE: current_entity_type,
                     CONF_ENTITIES: selected_entities,
                     CONF_INTEGRATION_ROOMS: selected_existing_zones,
+                    CONF_HIDE_FROM_INCLUDED_ZONES: user_input.get(CONF_HIDE_FROM_INCLUDED_ZONES, False),
                 }
                 await self.async_create_new_config(new_options, translated_entity_type)
                 return self.async_create_entry(
@@ -554,10 +591,11 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         ]
 
         assigned_integration_zones = get_selected_integration_zones(self.hass, exclude_entry_id=self.config_entry.entry_id)
+        hidden_integration_zones = get_hidden_integration_zones(self.hass)
         filtered_existing_zones = {
             eid: name
             for eid, name in existing_zones.items()
-            if eid not in assigned_integration_zones
+            if eid not in assigned_integration_zones and eid not in hidden_integration_zones
         }
 
         existing_entities_in_zones = set()
@@ -597,6 +635,9 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
 
         options_schema = vol.Schema({
             vol.Required(CONF_ROOM, default=old_zone): cv.string,
+            vol.Optional(
+                CONF_HIDE_FROM_INCLUDED_ZONES, default=old_hide_from_included_zones
+            ): selector.BooleanSelector(),
             smd_schema_field: selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=smart_meter_option_list,

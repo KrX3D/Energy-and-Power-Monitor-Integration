@@ -48,7 +48,7 @@ When you click **Add Integration** (or **Add Entry** on an existing integration)
 - **Manage excluded entities** — see [Excluded Entities](#excluded-entities).
 
 ### Step 2: Create a new zone (power or energy)
-Choose **Power** or **Energy** and set a zone name (e.g., *Living Room*).
+Choose **Power** or **Energy** and set a zone name (e.g., *Living Room*). A **Hide from Included Zones** checkbox sits right next to the zone name — turn it on for a zone that should never be offered as a sub-zone of another (typically your topmost/whole-house zone in a nested hierarchy). It can also be toggled later from the zone's **Reconfigure** screen.
 
 ### Step 3: Add entities, optional smart meter, and included zones
 You can configure three things:
@@ -67,7 +67,8 @@ You can configure three things:
 - **Included Zones (optional)**
   - Pick one or more already‑created zones to create a hierarchy.
   - This lets you build nested zones like *House → Floor → Zone*.
-  - Zones already assigned to another parent zone are hidden from the list.
+  - Zones already assigned to another parent zone, and any zone with **Hide from Included Zones** turned on, are hidden from the list.
+  - A zone never appears in its own picker, so it can't be included as its own sub-zone.
 
 ---
 
@@ -216,3 +217,4 @@ When you add a zone, the integration creates:
 - Smart monitors are optional, but helpful for identifying "unknown" consumption.
 - Zone names support unicode characters (e.g. accented letters) — the integration normalizes them automatically for entity IDs.
 - If a `_power`/`_energy` entity keeps showing up in dropdowns but isn't a real consumption sensor, add it to **Excluded Entities** once instead of skipping it manually in every zone.
+- Turn on **Hide from Included Zones** for your topmost/whole-house zone in a nested hierarchy — it has nothing above it to be included in, so keeping it out of every other zone's picker keeps that list shorter and prevents accidental circular nesting.
