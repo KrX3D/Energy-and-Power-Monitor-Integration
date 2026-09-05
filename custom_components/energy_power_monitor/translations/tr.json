@@ -22,6 +22,7 @@
       "add_zone": {
         "data": {
           "room": "Bölge Adı",
+          "hide_from_included_zones": "Dahil edilen bölgelerden gizle",
           "entity_type": "Varlık Tipi Filtre"
         },
         "title": "Bölge Yapılandırması",
@@ -47,6 +48,7 @@
         "description": "Bölge adını, akıllı izlemeyi veya sensörleri değiştirin",
         "data": {
           "room": "Bölge",
+          "hide_from_included_zones": "Dahil edilen bölgelerden gizle",
           "smart_meter_device": "Bu bölge için akıllı izleme",
           "entities": "Varlıklar",
           "integration_rooms": "Dahil edilen bölgeler",

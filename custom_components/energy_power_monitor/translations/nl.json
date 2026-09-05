@@ -22,6 +22,7 @@
       "add_zone": {
         "data": {
           "room": "Zonenaam",
+          "hide_from_included_zones": "Verbergen uit Inbegrepen zones",
           "entity_type": "Entiteitstype Filter"
         },
         "title": "Zoneconfiguratie",
@@ -47,6 +48,7 @@
         "description": "Wijzig de zonenaam, slimme monitor of sensoren",
         "data": {
           "room": "Zone",
+          "hide_from_included_zones": "Verbergen uit Inbegrepen zones",
           "smart_meter_device": "Slimme monitor voor deze zone",
           "entities": "Entiteiten",
           "integration_rooms": "Inbegrepen zones",

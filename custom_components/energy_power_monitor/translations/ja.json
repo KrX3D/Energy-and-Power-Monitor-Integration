@@ -22,6 +22,7 @@
       "add_zone": {
         "data": {
           "room": "ゾーン名",
+          "hide_from_included_zones": "「含まれるゾーン」から非表示にする",
           "entity_type": "エンティティタイプフィルタ"
         },
         "title": "ゾーンの設定",
@@ -47,6 +48,7 @@
         "description": "ゾーン名、スマートモニター、またはセンサーを変更します",
         "data": {
           "room": "ゾーン",
+          "hide_from_included_zones": "「含まれるゾーン」から非表示にする",
           "smart_meter_device": "このゾーンのスマートモニター",
           "entities": "エンティティ",
           "integration_rooms": "含まれるゾーン",

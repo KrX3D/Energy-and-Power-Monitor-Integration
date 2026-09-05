@@ -22,6 +22,7 @@
       "add_zone": {
         "data": {
           "room": "区域名称",
+          "hide_from_included_zones": "从包含的区域中隐藏",
           "entity_type": "实体类型过滤"
         },
         "title": "区域配置",
@@ -47,6 +48,7 @@
         "description": "更改区域名称、智能监控或传感器",
         "data": {
           "room": "区域",
+          "hide_from_included_zones": "从包含的区域中隐藏",
           "smart_meter_device": "此区域的智能监控",
           "entities": "实体",
           "integration_rooms": "包含的区域",

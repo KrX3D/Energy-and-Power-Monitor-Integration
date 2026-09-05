@@ -7,6 +7,7 @@ CONF_SMART_METER_DEVICE = "smart_meter_device"
 CONF_ENTITIES = "entities"
 CONF_ENTITY_TYPE = "entity_type"
 CONF_INTEGRATION_ROOMS = "integration_rooms"
+CONF_HIDE_FROM_INCLUDED_ZONES = "hide_from_included_zones"
 CONF_EXCLUDED_ENTITIES = "excluded_entities"
 CONF_ENTRY_KIND = "entry_kind"
 

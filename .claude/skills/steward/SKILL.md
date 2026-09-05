@@ -106,3 +106,27 @@ from anything HA needs to disambiguate), there is nothing for
 `unique_id` collision ever occurs, the entity registry's own
 `async_get_or_create()` disambiguates it when the entity is actually added,
 which is the right layer for that job.
+
+## Never derive a zone name by stripping a friendly_name string
+
+`get_integration_entities()` in `config_flow.py` used to build its
+`{entity_id: zone_name}` map from `state.attributes["friendly_name"]`, and
+`build_existing_zones_for_gui()` recovered the plain zone name by
+`.replace(" selected entities - Power", "")` / `.replace(" selected
+entities - Energy", "")` on that string. That template string only exists
+in one place — `EnergyandPowerMonitorSensor.name` in `sensor.py` — but the
+two were never guaranteed to stay byte-for-byte in sync (a wording or
+capitalization change on one side silently breaks the strip on the other),
+and a live report confirmed exactly that: the stripped name failed to
+match `entry.data[CONF_ROOM]` in the options flow's self-exclusion check
+(`if v != current_zone`), so a zone could pick *itself* as its own
+Included Zone.
+
+The fix: `get_integration_entities()` now resolves each zone entity's name
+by looking up its owning config entry (`entity_registry_entry.config_entry_id`
+→ `hass.config_entries.async_get_entry(...)` → `.data[CONF_ROOM]`) instead
+of parsing display text. `CONF_ROOM` is the actual source of truth the
+`name` property is built from, so reading it directly can't drift out of
+sync with whatever wording `sensor.py` uses. Don't reintroduce a
+friendly_name-parsing round trip to recover data that already lives
+unambiguously in config entry data.

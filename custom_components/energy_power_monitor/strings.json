@@ -12,6 +12,7 @@
       "add_zone": {
         "data": {
           "room": "Zone Name",
+          "hide_from_included_zones": "Hide from Included Zones",
           "entity_type": "Entity Type Filter"
         },
         "title": "Zone Configuration",
@@ -47,6 +48,7 @@
         "description": "Change the zone name, Smart Monitor, or sensors",
         "data": {
           "room": "Zone",
+          "hide_from_included_zones": "Hide from Included Zones",
           "smart_meter_device": "Smart Monitor for this Zone",
           "entities": "Entities",
           "integration_rooms": "Included Zones",
