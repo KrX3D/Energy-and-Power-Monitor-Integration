@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Nombre de la Zona",
-          "entity_type": "Filtro de Tipo de Entidad"
-        },
-        "title": "Configuración de la Zona",
-        "description": "Seleccione la zona y el tipo"
+        "title": "Energy and Power Monitor",
+        "description": "¿Qué le gustaría hacer?",
+        "menu_options": {
+          "add_zone": "Añadir una nueva zona",
+          "exclusions": "Gestionar entidades excluidas"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Configuración de la Zona",
         "description": "Seleccione un monitor inteligente para esta zona y los sensores incluidos"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Nombre de la Zona",
+          "entity_type": "Filtro de Tipo de Entidad"
+        },
+        "title": "Configuración de la Zona",
+        "description": "Seleccione la zona y el tipo"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entidades a excluir siempre"
+        },
+        "title": "Entidades excluidas",
+        "description": "Seleccione los sensores de potencia/energía que nunca deben ofrecerse como Entidad o Monitor inteligente al configurar cualquier zona (por ejemplo, entidades cuyo nombre termina en _power o _energy por coincidencia pero que no son sensores de consumo reales)."
       }
+    },
+    "abort": {
+      "already_configured": "Ya existe una entrada de \"Entidades excluidas\". Ábrala desde la lista de entradas de esta integración y use Configurar para editar la lista."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Ninguna"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entidades a excluir siempre"
+        },
+        "title": "Entidades excluidas",
+        "description": "Seleccione los sensores de potencia/energía que nunca deben ofrecerse como Entidad o Monitor inteligente al configurar cualquier zona."
       }
     }
   },

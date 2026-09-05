@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Nome della Zona",
-          "entity_type": "Filtro Tipo Entità"
-        },
-        "title": "Configurazione della Zona",
-        "description": "Seleziona la zona e il tipo"
+        "title": "Energy and Power Monitor",
+        "description": "Cosa desideri fare?",
+        "menu_options": {
+          "add_zone": "Aggiungi una nuova zona",
+          "exclusions": "Gestisci entità escluse"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Configurazione della Zona",
         "description": "Seleziona un monitor intelligente per questa zona e i sensori inclusi"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Nome della Zona",
+          "entity_type": "Filtro Tipo Entità"
+        },
+        "title": "Configurazione della Zona",
+        "description": "Seleziona la zona e il tipo"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entità da escludere sempre"
+        },
+        "title": "Entità escluse",
+        "description": "Seleziona i sensori di potenza/energia che non devono mai essere proposti come Entità o Monitor intelligente durante la configurazione di una zona (ad esempio entità il cui nome termina casualmente in _power o _energy ma che non sono veri sensori di consumo)."
       }
+    },
+    "abort": {
+      "already_configured": "Esiste già una voce \"Entità escluse\". Aprila dall'elenco delle voci di questa integrazione e usa Configura per modificare l'elenco."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Nessuna"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entità da escludere sempre"
+        },
+        "title": "Entità escluse",
+        "description": "Seleziona i sensori di potenza/energia che non devono mai essere proposti come Entità o Monitor intelligente durante la configurazione di una zona."
       }
     }
   },

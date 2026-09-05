@@ -7,9 +7,18 @@ CONF_SMART_METER_DEVICE = "smart_meter_device"
 CONF_ENTITIES = "entities"
 CONF_ENTITY_TYPE = "entity_type"
 CONF_INTEGRATION_ROOMS = "integration_rooms"
+CONF_EXCLUDED_ENTITIES = "excluded_entities"
+CONF_ENTRY_KIND = "entry_kind"
 
 ENTITY_TYPE_POWER = "power"
 ENTITY_TYPE_ENERGY = "energy"
+
+# Marks the single, global "Excluded Entities" config entry (see config_flow.py)
+# as distinct from a normal per-zone config entry. Zone entries have no
+# CONF_ENTRY_KIND key at all, so `entry.data.get(CONF_ENTRY_KIND) ==
+# ENTRY_KIND_EXCLUSIONS` is the only check needed to tell them apart.
+ENTRY_KIND_EXCLUSIONS = "exclusions"
+EXCLUDED_ENTITIES_TITLE = "Excluded Entities"
 
 
 def sanitize_zone_name(zone_name: str) -> str:

@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Nome da Zona",
-          "entity_type": "Filtro de Tipo de Entidade"
-        },
-        "title": "Configuração da Zona",
-        "description": "Selecione a zona e o tipo"
+        "title": "Energy and Power Monitor",
+        "description": "O que gostaria de fazer?",
+        "menu_options": {
+          "add_zone": "Adicionar nova zona",
+          "exclusions": "Gerir entidades excluídas"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Configuração da Zona",
         "description": "Selecione um monitor inteligente para esta zona e os sensores incluídos"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Nome da Zona",
+          "entity_type": "Filtro de Tipo de Entidade"
+        },
+        "title": "Configuração da Zona",
+        "description": "Selecione a zona e o tipo"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entidades a excluir sempre"
+        },
+        "title": "Entidades excluídas",
+        "description": "Selecione os sensores de potência/energia que nunca devem ser oferecidos como Entidade ou Monitor inteligente ao configurar qualquer zona (por exemplo, entidades cujo nome termina em _power ou _energy por coincidência mas que não são sensores de consumo reais)."
       }
+    },
+    "abort": {
+      "already_configured": "Já existe uma entrada \"Entidades excluídas\". Abra-a na lista de entradas desta integração e use Configurar para editar a lista."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Nenhum"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entidades a excluir sempre"
+        },
+        "title": "Entidades excluídas",
+        "description": "Selecione os sensores de potência/energia que nunca devem ser oferecidos como Entidade ou Monitor inteligente ao configurar qualquer zona."
       }
     }
   },

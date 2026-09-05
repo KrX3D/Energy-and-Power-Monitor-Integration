@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Zonenaam",
-          "entity_type": "Entiteitstype Filter"
-        },
-        "title": "Zoneconfiguratie",
-        "description": "Selecteer de zone en het type"
+        "title": "Energy and Power Monitor",
+        "description": "Wat wilt u doen?",
+        "menu_options": {
+          "add_zone": "Nieuwe zone toevoegen",
+          "exclusions": "Uitgesloten entiteiten beheren"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Zoneconfiguratie",
         "description": "Selecteer een slimme monitor voor deze zone en de inbegrepen sensoren"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Zonenaam",
+          "entity_type": "Entiteitstype Filter"
+        },
+        "title": "Zoneconfiguratie",
+        "description": "Selecteer de zone en het type"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Altijd uit te sluiten entiteiten"
+        },
+        "title": "Uitgesloten entiteiten",
+        "description": "Selecteer vermogens-/energiesensoren die nooit mogen worden aangeboden als Entiteit of Slimme monitor bij het configureren van een zone (bijvoorbeeld entiteiten waarvan de naam toevallig eindigt op _power of _energy maar die geen echte verbruikssensoren zijn)."
       }
+    },
+    "abort": {
+      "already_configured": "Er bestaat al een item \"Uitgesloten entiteiten\". Open dit vanuit de lijst met items van deze integratie en gebruik Configureren om de lijst te bewerken."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Geen"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Altijd uit te sluiten entiteiten"
+        },
+        "title": "Uitgesloten entiteiten",
+        "description": "Selecteer vermogens-/energiesensoren die nooit mogen worden aangeboden als Entiteit of Slimme monitor bij het configureren van een zone."
       }
     }
   },

@@ -42,10 +42,15 @@ Hello! This is my first integration and my first GitHub repository, so please be
 
 ## Configuration Overview
 
-### Step 1: Create a new zone (power or energy)
+### Step 1: Choose what to do
+When you click **Add Integration** (or **Add Entry** on an existing integration), you're asked to pick one of:
+- **Add a new zone** — the zone workflow described below.
+- **Manage excluded entities** — see [Excluded Entities](#excluded-entities).
+
+### Step 2: Create a new zone (power or energy)
 Choose **Power** or **Energy** and set a zone name (e.g., *Living Room*).
 
-### Step 2: Add entities, optional smart meter, and included zones
+### Step 3: Add entities, optional smart meter, and included zones
 You can configure three things:
 
 - **Entities**
@@ -63,6 +68,25 @@ You can configure three things:
   - Pick one or more already‑created zones to create a hierarchy.
   - This lets you build nested zones like *House → Floor → Zone*.
   - Zones already assigned to another parent zone are hidden from the list.
+
+---
+
+## Excluded Entities
+
+Sometimes a sensor's entity ID happens to end in `_power` or `_energy` without actually being a real consumption sensor you want to track (e.g. `sensor.heating_power` could be a target/setpoint helper, not an actual power reading). Rather than remembering to skip it by hand in every zone, you can exclude it globally, once:
+
+1. Go to **Settings → Devices & Services → Add Entry** on the **Energy and Power Monitor** integration (or **Add Integration** if you haven't set up any zone yet).
+2. Choose **Manage excluded entities**.
+3. Select every entity that should never be offered as an Entity or Smart Monitor.
+
+The list to pick from only shows `_power`/`_energy` sensors that are actually still available for selection right now — the same pool the Entities/Smart Monitor dropdowns draw from — not every power/energy entity in your Home Assistant instance. An entity already assigned to a zone or already used as a Smart Monitor won't show up here either, since it's not a candidate anywhere until it's freed up.
+
+This creates a single, dedicated **Excluded Entities** entry that shows up right alongside your zones in the integration's entry list — that's also where you go to edit the list later (click it → **Configure**). Only one such entry can exist; the menu option won't let you create a second one.
+
+Once set:
+- Excluded entities disappear from the **Entities** and **Smart Monitor** dropdowns in both the "add zone" and "reconfigure zone" screens, for every zone, power and energy alike.
+- Entities already assigned to a zone before being excluded are **not** removed from that zone — exclusion only affects future selection, so existing setups don't silently break.
+- The **Excluded Entities** entry itself doesn't create any sensors; it's a settings-only entry.
 
 ---
 
@@ -115,6 +139,7 @@ HOUSE
 - This integration allows you to create multiple groups for your energy and power sensors.
 - Dropdown boxes are filtered to avoid duplicate selections. Once an energy/power sensor is assigned to a zone it will no longer appear for selection in other zones.
 - The initial screen lets you choose between **Energy** and **Power**, which filters the entities available in the next step.
+- You can globally block specific entities from ever showing up as candidates — see [Excluded Entities](#excluded-entities).
 
 **Configuration screen:**
 - **Entities:**
@@ -190,3 +215,4 @@ When you add a zone, the integration creates:
 - Build your hierarchy from the bottom up (devices → zones → floors → house).
 - Smart monitors are optional, but helpful for identifying "unknown" consumption.
 - Zone names support unicode characters (e.g. accented letters) — the integration normalizes them automatically for entity IDs.
+- If a `_power`/`_energy` entity keeps showing up in dropdowns but isn't a real consumption sensor, add it to **Excluded Entities** once instead of skipping it manually in every zone.
