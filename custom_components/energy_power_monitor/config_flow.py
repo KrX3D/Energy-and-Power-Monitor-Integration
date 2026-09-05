@@ -16,6 +16,10 @@ from .const import (
     ENTITY_TYPE_ENERGY,
     CONF_INTEGRATION_ROOMS,
     CONF_SMART_METER_DEVICE,
+    CONF_EXCLUDED_ENTITIES,
+    CONF_ENTRY_KIND,
+    ENTRY_KIND_EXCLUSIONS,
+    EXCLUDED_ENTITIES_TITLE,
     sanitize_zone_name,
     is_smart_meter_selected,
 )
@@ -168,6 +172,37 @@ def get_selected_integration_zones(hass, existing_zones=None, exclude_entry_id=N
     return assigned
 
 
+def get_exclusions_entry(hass):
+    """Return the singleton 'Excluded Entities' config entry, if one exists."""
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.data.get(CONF_ENTRY_KIND) == ENTRY_KIND_EXCLUSIONS:
+            return entry
+    return None
+
+
+def get_excluded_entities(hass):
+    """Return the globally-excluded entity IDs set via the 'Excluded Entities' entry."""
+    entry = get_exclusions_entry(hass)
+    excluded = set(entry.data.get(CONF_EXCLUDED_ENTITIES, [])) if entry else set()
+    _LOGGER.debug("get_excluded_entities: %s", excluded)
+    return excluded
+
+
+def get_excludable_entities(hass):
+    """Return all power/energy sensors eligible for the global exclusion list.
+
+    This intentionally ignores current zone assignments — excluding an entity
+    is a standing decision independent of whether it happens to be in a zone
+    right now.
+    """
+    all_entities = hass.states.async_entity_ids("sensor")
+    candidates = [
+        e for e in all_entities
+        if (e.endswith("_power") or e.endswith("_energy")) and not e.startswith(f"sensor.{DOMAIN}")
+    ]
+    return sorted(candidates)
+
+
 def build_existing_zones_for_gui(integration_entities):
     """Build a {entity_id: friendly_name} dict suitable for zone dropdowns."""
     existing = {
@@ -189,6 +224,13 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        """Entry point: choose between adding a zone or managing excluded entities."""
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=["add_zone", "exclusions"],
+        )
+
+    async def async_step_add_zone(self, user_input=None):
         errors = {}
         if user_input is not None:
             self.selected_type = user_input[CONF_ENTITY_TYPE]
@@ -208,7 +250,36 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
             ),
         })
-        return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
+        return self.async_show_form(step_id="add_zone", data_schema=data_schema, errors=errors)
+
+    async def async_step_exclusions(self, user_input=None):
+        """Create the single, global 'Excluded Entities' entry.
+
+        Only one may exist; once created, it's edited via that entry's own
+        Configure/options flow (EnergyandPowerMonitorExclusionsOptionsFlowHandler)
+        instead of being re-created here.
+        """
+        if get_exclusions_entry(self.hass) is not None:
+            return self.async_abort(reason="already_configured")
+
+        if user_input is not None:
+            selected = sorted(user_input.get(CONF_EXCLUDED_ENTITIES, []))
+            _LOGGER.info("Creating Excluded Entities entry: %s", selected)
+            return self.async_create_entry(
+                title=EXCLUDED_ENTITIES_TITLE,
+                data={
+                    CONF_ENTRY_KIND: ENTRY_KIND_EXCLUSIONS,
+                    CONF_EXCLUDED_ENTITIES: selected,
+                },
+            )
+
+        candidates = get_excludable_entities(self.hass)
+        data_schema = vol.Schema({
+            vol.Optional(CONF_EXCLUDED_ENTITIES, default=[]): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, candidates))
+            ),
+        })
+        return self.async_show_form(step_id="exclusions", data_schema=data_schema)
 
     async def async_step_select_entities(self, user_input=None):
         errors = {}
@@ -226,9 +297,12 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         existing_entities_in_zones = set()
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             existing_entities_in_zones.update(entry.data.get(CONF_ENTITIES, []))
+        excluded_entities = get_excluded_entities(self.hass)
         filtered_entities = sorted([
             e for e in filtered_entities
-            if e not in existing_entities_in_zones and e not in selected_smart_meter_devices
+            if e not in existing_entities_in_zones
+            and e not in selected_smart_meter_devices
+            and e not in excluded_entities
         ])
         _LOGGER.debug("Filtered entities for new zone: %s", filtered_entities)
 
@@ -292,7 +366,42 @@ class EnergyandPowerMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get the options flow."""
+        if config_entry.data.get(CONF_ENTRY_KIND) == ENTRY_KIND_EXCLUSIONS:
+            return EnergyandPowerMonitorExclusionsOptionsFlowHandler()
         return EnergyandPowerMonitorOptionsFlowHandler()
+
+
+# ---------------------------------------------------------------------------
+# Excluded Entities options flow
+# ---------------------------------------------------------------------------
+
+class EnergyandPowerMonitorExclusionsOptionsFlowHandler(config_entries.OptionsFlow):
+    """Edit the global list of entities excluded from every zone/smart-monitor picker."""
+
+    async def async_step_init(self, user_input=None):
+        return await self.async_step_exclusions(user_input)
+
+    async def async_step_exclusions(self, user_input=None):
+        old_excluded = set(self.config_entry.data.get(CONF_EXCLUDED_ENTITIES, []))
+
+        if user_input is not None:
+            selected = sorted(user_input.get(CONF_EXCLUDED_ENTITIES, []))
+            _LOGGER.info("Updating Excluded Entities entry: %s", selected)
+            new_data = dict(self.config_entry.data)
+            new_data[CONF_EXCLUDED_ENTITIES] = selected
+            self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
+            return self.async_create_entry(title=EXCLUDED_ENTITIES_TITLE, data=new_data)
+
+        # Keep any currently-excluded entity selectable even if it no longer
+        # matches the _power/_energy suffix (e.g. it was renamed), so it isn't
+        # silently dropped from the list just by opening this form.
+        candidates = sorted(set(get_excludable_entities(self.hass)) | old_excluded)
+        data_schema = vol.Schema({
+            vol.Optional(CONF_EXCLUDED_ENTITIES, default=sorted(old_excluded)): vol.All(
+                cv.multi_select(build_entity_label_map(self.hass, candidates))
+            ),
+        })
+        return self.async_show_form(step_id="exclusions", data_schema=data_schema)
 
 
 # ---------------------------------------------------------------------------
@@ -415,9 +524,12 @@ class EnergyandPowerMonitorOptionsFlowHandler(config_entries.OptionsFlow):
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             existing_entities_in_zones.update(entry.data.get(CONF_ENTITIES, []))
 
+        excluded_entities = get_excluded_entities(self.hass)
         filtered_entities = sorted(
             e for e in filtered_entities
-            if e not in existing_entities_in_zones and e not in selected_smart_meter_devices
+            if e not in existing_entities_in_zones
+            and e not in selected_smart_meter_devices
+            and e not in excluded_entities
         )
         filtered_entities = sorted(set(filtered_entities))
 

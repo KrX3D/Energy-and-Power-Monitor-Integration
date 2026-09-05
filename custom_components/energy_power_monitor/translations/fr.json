@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Nom de la Zone",
-          "entity_type": "Filtre de Type d'Entité"
-        },
-        "title": "Configuration de la Zone",
-        "description": "Sélectionnez la zone et le type"
+        "title": "Energy and Power Monitor",
+        "description": "Que souhaitez-vous faire ?",
+        "menu_options": {
+          "add_zone": "Ajouter une nouvelle zone",
+          "exclusions": "Gérer les entités exclues"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Configuration de la Zone",
         "description": "Sélectionnez un moniteur intelligent pour cette zone et les capteurs inclus"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Nom de la Zone",
+          "entity_type": "Filtre de Type d'Entité"
+        },
+        "title": "Configuration de la Zone",
+        "description": "Sélectionnez la zone et le type"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entités à toujours exclure"
+        },
+        "title": "Entités exclues",
+        "description": "Sélectionnez les capteurs de puissance/énergie qui ne doivent jamais être proposés comme Entité ou Moniteur intelligent lors de la configuration d'une zone (par exemple des entités dont le nom se termine par _power ou _energy par coïncidence mais qui ne sont pas de vrais capteurs de consommation)."
       }
+    },
+    "abort": {
+      "already_configured": "Une entrée « Entités exclues » existe déjà. Ouvrez-la depuis la liste des entrées de cette intégration et utilisez Configurer pour modifier la liste."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Aucune"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entités à toujours exclure"
+        },
+        "title": "Entités exclues",
+        "description": "Sélectionnez les capteurs de puissance/énergie qui ne doivent jamais être proposés comme Entité ou Moniteur intelligent lors de la configuration d'une zone."
       }
     }
   },

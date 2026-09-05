@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "구역 이름",
-          "entity_type": "엔티티 유형 필터"
-        },
-        "title": "구역 설정",
-        "description": "구역과 유형 선택"
+        "title": "Energy and Power Monitor",
+        "description": "무엇을 하시겠습니까?",
+        "menu_options": {
+          "add_zone": "새 구역 추가",
+          "exclusions": "제외된 엔티티 관리"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "구역 설정",
         "description": "이 구역의 스마트 모니터와 포함된 센서를 선택하세요"
+      },
+      "add_zone": {
+        "data": {
+          "room": "구역 이름",
+          "entity_type": "엔티티 유형 필터"
+        },
+        "title": "구역 설정",
+        "description": "구역과 유형 선택"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "항상 제외할 엔티티"
+        },
+        "title": "제외된 엔티티",
+        "description": "구역을 설정할 때 엔티티 또는 스마트 모니터로 표시되지 않아야 하는 전력/에너지 센서를 선택하세요 (예: 이름이 우연히 _power 또는 _energy로 끝나지만 실제 소비 센서가 아닌 엔티티)."
       }
+    },
+    "abort": {
+      "already_configured": "이미 \"제외된 엔티티\" 항목이 존재합니다. 이 통합의 항목 목록에서 열어 구성을 사용하여 목록을 편집하세요."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "없음"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "항상 제외할 엔티티"
+        },
+        "title": "제외된 엔티티",
+        "description": "구역을 설정할 때 엔티티 또는 스마트 모니터로 표시되지 않아야 하는 전력/에너지 센서를 선택하세요."
       }
     }
   },

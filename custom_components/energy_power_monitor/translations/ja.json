@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "ゾーン名",
-          "entity_type": "エンティティタイプフィルタ"
-        },
-        "title": "ゾーンの設定",
-        "description": "ゾーンとタイプを選択"
+        "title": "Energy and Power Monitor",
+        "description": "何を行いますか?",
+        "menu_options": {
+          "add_zone": "新しいゾーンを追加",
+          "exclusions": "除外エンティティを管理"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "ゾーンの設定",
         "description": "このゾーンのスマートモニターと含まれるセンサーを選択します"
+      },
+      "add_zone": {
+        "data": {
+          "room": "ゾーン名",
+          "entity_type": "エンティティタイプフィルタ"
+        },
+        "title": "ゾーンの設定",
+        "description": "ゾーンとタイプを選択"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "常に除外するエンティティ"
+        },
+        "title": "除外エンティティ",
+        "description": "ゾーンを設定する際にエンティティやスマートモニターとして表示しない電力/エネルギーセンサーを選択します(例:名前がたまたま _power や _energy で終わるが、実際の消費センサーではないエンティティなど)。"
       }
+    },
+    "abort": {
+      "already_configured": "「除外エンティティ」の項目はすでに存在します。この統合の項目一覧から開き、「設定」を使用してリストを編集してください。"
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "なし"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "常に除外するエンティティ"
+        },
+        "title": "除外エンティティ",
+        "description": "ゾーンを設定する際にエンティティやスマートモニターとして表示しない電力/エネルギーセンサーを選択します。"
       }
     }
   },

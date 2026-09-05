@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "区域名称",
-          "entity_type": "实体类型过滤"
-        },
-        "title": "区域配置",
-        "description": "选择区域和类型"
+        "title": "Energy and Power Monitor",
+        "description": "您想做什么?",
+        "menu_options": {
+          "add_zone": "添加新区域",
+          "exclusions": "管理排除的实体"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "区域配置",
         "description": "选择此区域的智能监控及包含的传感器"
+      },
+      "add_zone": {
+        "data": {
+          "room": "区域名称",
+          "entity_type": "实体类型过滤"
+        },
+        "title": "区域配置",
+        "description": "选择区域和类型"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "始终排除的实体"
+        },
+        "title": "排除的实体",
+        "description": "选择在配置任何区域时不应作为实体或智能监控提供的功率/能量传感器(例如名称恰好以 _power 或 _energy 结尾但并非真正消耗传感器的实体)。"
       }
+    },
+    "abort": {
+      "already_configured": "已存在一个“排除的实体”项。请从此集成的条目列表中打开它,并使用“配置”来编辑列表。"
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "无"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "始终排除的实体"
+        },
+        "title": "排除的实体",
+        "description": "选择在配置任何区域时不应作为实体或智能监控提供的功率/能量传感器。"
       }
     }
   },

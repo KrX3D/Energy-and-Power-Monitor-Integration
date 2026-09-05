@@ -2,6 +2,14 @@
   "config": {
     "step": {
       "user": {
+        "title": "Energy and Power Monitor",
+        "description": "What would you like to do?",
+        "menu_options": {
+          "add_zone": "Add a new zone",
+          "exclusions": "Manage excluded entities"
+        }
+      },
+      "add_zone": {
         "data": {
           "room": "Zone Name",
           "entity_type": "Entity Type Filter"
@@ -18,7 +26,17 @@
         },
         "title": "Zone Configuration",
         "description": "Select a Smart Monitor for this zone and the sensors included in it"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entities to always exclude"
+        },
+        "title": "Excluded Entities",
+        "description": "Pick power/energy sensors that should never be offered as an Entity or Smart Monitor when configuring any zone (for example, entities whose name coincidentally ends in _power or _energy but aren't real consumption sensors)."
       }
+    },
+    "abort": {
+      "already_configured": "An \"Excluded Entities\" entry already exists. Open it from this integration's entry list and use Configure to edit the list."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "None"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Entities to always exclude"
+        },
+        "title": "Excluded Entities",
+        "description": "Pick power/energy sensors that should never be offered as an Entity or Smart Monitor when configuring any zone."
       }
     }
   },

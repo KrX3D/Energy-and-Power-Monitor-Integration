@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Bölge Adı",
-          "entity_type": "Varlık Tipi Filtre"
-        },
-        "title": "Bölge Yapılandırması",
-        "description": "Bölgeyi ve tipi seçin"
+        "title": "Energy and Power Monitor",
+        "description": "Ne yapmak istersiniz?",
+        "menu_options": {
+          "add_zone": "Yeni bölge ekle",
+          "exclusions": "Hariç tutulan varlıkları yönet"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Bölge Yapılandırması",
         "description": "Bu bölge için akıllı izlemeyi ve dahil edilen sensörleri seçin"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Bölge Adı",
+          "entity_type": "Varlık Tipi Filtre"
+        },
+        "title": "Bölge Yapılandırması",
+        "description": "Bölgeyi ve tipi seçin"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Her zaman hariç tutulacak varlıklar"
+        },
+        "title": "Hariç Tutulan Varlıklar",
+        "description": "Herhangi bir bölge yapılandırılırken Varlık veya Akıllı İzleme olarak asla sunulmaması gereken güç/enerji sensörlerini seçin (örneğin, adı tesadüfen _power veya _energy ile biten ancak gerçek tüketim sensörü olmayan varlıklar)."
       }
+    },
+    "abort": {
+      "already_configured": "Zaten bir \"Hariç Tutulan Varlıklar\" girişi var. Bu entegrasyonun giriş listesinden açın ve listeyi düzenlemek için Yapılandır'ı kullanın."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Hiçbiri"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Her zaman hariç tutulacak varlıklar"
+        },
+        "title": "Hariç Tutulan Varlıklar",
+        "description": "Herhangi bir bölge yapılandırılırken Varlık veya Akıllı İzleme olarak asla sunulmaması gereken güç/enerji sensörlerini seçin."
       }
     }
   },

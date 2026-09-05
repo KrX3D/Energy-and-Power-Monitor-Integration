@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "room": "Zonenname",
-          "entity_type": "Entitätstyp Filter"
-        },
-        "title": "Zonenkonfiguration",
-        "description": "Wählen Sie die Zone und den Typ aus"
+        "title": "Energy and Power Monitor",
+        "description": "Was möchten Sie tun?",
+        "menu_options": {
+          "add_zone": "Neue Zone hinzufügen",
+          "exclusions": "Ausgeschlossene Entitäten verwalten"
+        }
       },
       "select_entities": {
         "data": {
@@ -18,7 +18,25 @@
         },
         "title": "Zonenkonfiguration",
         "description": "Wählen Sie einen Smart Monitor für diese Zone und alle enthaltenen Sensoren"
+      },
+      "add_zone": {
+        "data": {
+          "room": "Zonenname",
+          "entity_type": "Entitätstyp Filter"
+        },
+        "title": "Zonenkonfiguration",
+        "description": "Wählen Sie die Zone und den Typ aus"
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Immer auszuschließende Entitäten"
+        },
+        "title": "Ausgeschlossene Entitäten",
+        "description": "Wählen Sie Leistungs-/Energiesensoren aus, die nie als Entität oder Smart Monitor bei der Konfiguration einer Zone angeboten werden sollen (zum Beispiel Entitäten, deren Name zufällig auf _power oder _energy endet, aber keine echten Verbrauchssensoren sind)."
       }
+    },
+    "abort": {
+      "already_configured": "Es existiert bereits ein Eintrag „Ausgeschlossene Entitäten“. Öffnen Sie ihn in der Liste dieser Integration und verwenden Sie „Konfigurieren“, um die Liste zu bearbeiten."
     }
   },
   "options": {
@@ -38,6 +56,13 @@
         "data": {
           "none": "Keine"
         }
+      },
+      "exclusions": {
+        "data": {
+          "excluded_entities": "Immer auszuschließende Entitäten"
+        },
+        "title": "Ausgeschlossene Entitäten",
+        "description": "Wählen Sie Leistungs-/Energiesensoren aus, die nie als Entität oder Smart Monitor bei der Konfiguration einer Zone angeboten werden sollen."
       }
     }
   },
