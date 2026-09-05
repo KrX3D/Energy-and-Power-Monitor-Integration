@@ -1,0 +1,55 @@
+name: Python Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  compile-and-translations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v6.0.2
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 🔍 Byte-compile check
+        run: python -m compileall -q custom_components/energy_power_monitor
+
+      - name: 🌐 Verify translations stay in sync with strings.json
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import sys
+          from pathlib import Path
+
+          def flatten(node, prefix=""):
+              keys = set()
+              if isinstance(node, dict):
+                  for key, value in node.items():
+                      keys |= flatten(value, f"{prefix}.{key}" if prefix else key)
+              else:
+                  keys.add(prefix)
+              return keys
+
+          component_dir = Path("custom_components/energy_power_monitor")
+          base_keys = flatten(json.loads((component_dir / "strings.json").read_text()))
+
+          ok = True
+          for translation_file in sorted((component_dir / "translations").glob("*.json")):
+              keys = flatten(json.loads(translation_file.read_text()))
+              missing = base_keys - keys
+              extra = keys - base_keys
+              if missing or extra:
+                  ok = False
+                  print(f"::error file={translation_file}::key mismatch vs strings.json "
+                        f"(missing={sorted(missing)}, extra={sorted(extra)})")
+
+          sys.exit(0 if ok else 1)
+          PYEOF
