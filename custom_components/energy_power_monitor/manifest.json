@@ -1,6 +1,7 @@
 {
   "domain": "energy_power_monitor",
   "name": "Energy and Power Monitor",
+  "categories": ["energy.meters_monitoring"],
   "codeowners": ["@KrX3D"],
   "config_flow": true,
   "dependencies": [],
